@@ -253,6 +253,33 @@ public:
         return *this;
     }
 
+    constexpr inline fixed& operator%=(const fixed& y) noexcept
+    {
+        m_value %= y.m_value;
+        return *this;
+    }
+
+    template <typename I> requires std::is_integral_v<I>
+    constexpr inline fixed& operator%=(I y) noexcept
+    {
+        m_value %= y * FRACTION_MULT;
+        return *this;
+    }
+
+    template <typename I> requires std::is_integral_v<I>
+    constexpr inline fixed& operator>>=(I y) noexcept
+    {
+        m_value >>= y;
+        return *this;
+    }
+
+    template <typename I> requires std::is_integral_v<I>
+    constexpr inline fixed& operator<<=(I y) noexcept
+    {
+        m_value <<= y;
+        return *this;
+    }
+
 private:
     BaseType m_value;
 };
@@ -371,6 +398,48 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(T x, const fixed<B, I
 {
     return fixed<B, I, F, R>(x) / y;
 }
+
+//
+// Modulo
+//
+
+template <typename B, typename I, unsigned int F, bool R>
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator%(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+{
+    return fixed<B, I, F, R>(x) %= y;
+}
+
+template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator%(const fixed<B, I, F, R>& x, T y) noexcept
+{
+    return fixed<B, I, F, R>(x) %= y;
+}
+
+template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator%(T x, const fixed<B, I, F, R>& y) noexcept
+{
+    return fixed<B, I, F, R>(x) %= y;
+}
+
+//
+// Bit-shift
+//
+
+template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator>>(const fixed<B, I, F, R>& x, T y) noexcept
+{
+    return fixed<B, I, F, R>(x) >>= y;
+}
+
+template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator<<(const fixed<B, I, F, R>& x, T y) noexcept
+{
+    return fixed<B, I, F, R>(x) <<= y;
+}
+
+//
+// Comparison operators
+//
 
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline bool operator==(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept

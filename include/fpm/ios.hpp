@@ -739,42 +739,223 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 
 #if __cplusplus >= 202002L
 #   include <version>
-#endif
-#ifdef __cpp_lib_format
-#   include <format>
-#   include <sstream>
+#   ifdef __cpp_lib_format
+#       include <format>
+#       include <sstream>
 template<typename CharT, typename B, typename I, unsigned int F, bool R>
 struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
 {
-    bool showpos = false;
+    /// Any character used for padding
+    char paddingChar = ' ';
+    enum class Alignment : char
+    {
+        Left = '<', ///< align left = padding on right
+        Right = '>', ///< align right = padding on left
+        Center = '^', ///< align center = padding on both sides, more on left
+    };
+    Alignment alignmentChar = Alignment::Right;
 
-    template<class ParseContext>
+    enum class SignControl : char
+    {
+        PositiveSign = '+', ///< Always show sign, '-' or '+'
+        PositiveSpace = ' ', ///< Always show sign, '-' or ' '
+        NegativeOnly = '-' ///< Show only negative sign
+    };
+    SignControl signControl = SignControl::NegativeOnly;
+
+    /// Alternate Form.
+    /// Always contain decimal point (even if there is no digit behind it).
+    /// Special behaviour for 'g' and 'G' types.
+    bool hashOption = false;
+    /// Zero-padding between sign and numbers.
+    /// No effect for non-default alignment
+    bool zeroOption = false;
+
+    std::size_t width = 0;
+
+    template<class ParseContext = std::format_context>
     constexpr typename ParseContext::iterator parse(ParseContext& ctx)
     {
         auto it = ctx.begin();
-        if(it != ctx.end() && *it == '+')
+
+        // Alignment, (+padding)
+        if(it != ctx.end())
         {
-            showpos = true;
+            bool used = false;
+
+            const auto c = *it;
+            if(it + 1 != ctx.end())
+            {
+                const auto c1 = *(it + 1);
+                if(
+                    c1 == static_cast<char>(Alignment::Left)
+                    || c1 == static_cast<char>(Alignment::Right)
+                    || c1 == static_cast<char>(Alignment::Center)
+                )
+                {
+                    paddingChar = c;
+                    alignmentChar = static_cast<Alignment>(c1);
+                    ++it;
+                    ++it;
+                    used = true;
+                }
+            }
+            if(
+                !used
+                && (
+                    c == static_cast<char>(Alignment::Left)
+                    || c == static_cast<char>(Alignment::Right)
+                    || c == static_cast<char>(Alignment::Center)
+                )
+            )
+            {
+                alignmentChar = static_cast<Alignment>(c);
+                ++it;
+            }
+        }
+
+        // Sign Control
+        if(it != ctx.end())
+        {
+            const auto c = *it;
+            if(
+                c == static_cast<char>(SignControl::PositiveSign)
+                || c == static_cast<char>(SignControl::PositiveSpace)
+                || c == static_cast<char>(SignControl::NegativeOnly)
+            )
+            {
+                signControl = static_cast<SignControl>(c);
+                ++it;
+            }
+        }
+
+        // Alternate form
+        if(it != ctx.end() && *it == '#')
+        {
+            hashOption = true;
             ++it;
         }
+
+        // Zero padding
+        if(it != ctx.end() && *it == '0')
+        {
+            zeroOption = true;
+            ++it;
+        }
+
+        // Width
+        while(it != ctx.end())
+        {
+            //TODO Nested width
+            const auto c = *it;
+            if(c >= '0' && c <= '9')
+            {
+                width = width * 10 + (c - '0');
+                ++it;
+            }
+            else
+                break;
+        }
+
+        //TODO Precision
+        //TODO L = locale
+        //TODO type
+
         if(it != ctx.end() && *it != '}')
         {
-            throw std::format_error("Invalid format");
+            throw std::format_error("Invalid format - unexpected character '" + std::string(1, *it) + "'");
         }
         return it;
     }
 
-    template<typename FormatContext>
+    template<typename FormatContext = std::format_context>
     typename FormatContext::iterator format(const fpm::fixed<B, I, F, R>& value, FormatContext& ctx) const
     {
         std::basic_ostringstream<CharT> out;
-        if(showpos)
-            out << std::showpos;
+        if(signControl != SignControl::NegativeOnly && value >= decltype(value){0})
+        {
+            if(signControl == SignControl::PositiveSign)
+                out << '+';
+            else if(signControl == SignControl::PositiveSpace)
+                out << ' ';
+            else
+                throw std::format_error("Invalid sign behaviour");
+        }
         out << value;
 
-        return std::ranges::copy(std::move(out).str(), ctx.out()).out;
+        // Padding
+        if(out.tellp() < width)
+        {
+            if(alignmentChar == Alignment::Left)
+            {
+                while(out.tellp() < width)
+                    out << paddingChar;
+            }
+            else if(alignmentChar == Alignment::Right)
+            {
+                if(zeroOption)
+                {
+                    const auto str = out.str();
+                    out.clear();
+                    out.seekp(0, std::ios::beg);
+
+                    const bool hasSign = !str.empty() && (str[0] == '+' || str[0] == '-');
+                    if(hasSign)
+                        out << str[0];
+
+                    while(out.tellp() < width - str.size() + (hasSign ? 1 : 0))
+                        out << '0';
+
+                    if(hasSign)
+                        out << str.data() + 1; // equivalent to sub_string(1)
+                    else
+                        out << str;
+                }
+                else
+                {
+                    const auto str = out.str();
+                    out.clear();
+                    out.seekp(0, std::ios::beg);
+
+                    while(out.tellp() < width - str.size())
+                        out << paddingChar;
+                    out << str;
+                }
+            }
+            else if(alignmentChar == Alignment::Center)
+            {
+                const auto str = out.str();
+                out.clear();
+                out.seekp(0, std::ios::beg);
+
+                if(str.length() < width)
+                {
+                    const auto padding = width - str.length();
+                    const auto halfPadding = padding / 2;
+
+                    for(std::size_t i = 0; i < halfPadding; ++i) // Padding before the value
+                        out << paddingChar;
+
+                    out << str;
+
+                    for(std::size_t i = 0; i < halfPadding; ++i) // Padding after the value
+                        out << paddingChar;
+                    if(halfPadding + halfPadding < padding) // This is the longer one (for odd numbers)
+                        out << paddingChar;
+                }
+            }
+            else
+                throw std::runtime_error("Unknown alignment character");
+        }
+
+        {
+            const auto str = out.str();
+            std::copy(str.begin(), str.end(), ctx.out());
+            return ctx.out();
+        }
     }
 };
+#   endif
 #endif
 
 #endif

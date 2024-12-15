@@ -742,9 +742,18 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 #   ifdef __cpp_lib_format
 #       include <format>
 #       include <sstream>
+#       include <string_view>
 template<typename CharT, typename B, typename I, unsigned int F, bool R>
 struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
 {
+    static_assert(
+        // You can add `char32_t` but it is not tested.
+        // `char8_t` and `char16_t` are variable-width and therefore not supported.
+        // std::format is implemented only for `char` and `wchar_t` anyway
+        std::is_same<CharT, char>::value || std::is_same<CharT, wchar_t>::value,
+        "Formatter is implemented only for fixed-width encodings"
+    );
+
     /// Any character used for padding
     char paddingChar = ' ';
     enum class Alignment : char
@@ -772,6 +781,26 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
     bool zeroOption = false;
 
     std::size_t width = 0;
+    /// -1 means unchanged (this value cannot be set by the user as negative values are not possible)
+    std::size_t precision = -1;
+
+    enum class FormatType : char
+    {
+        Default = '\0',
+
+        Hex = 'a',
+        Hex_Upper = 'A',
+
+        Scientific = 'e',
+        Scientific_Upper = 'E',
+
+        Fixed = 'f',
+        Fixed_Upper = 'F', ///< Same behaviour as Fixed
+
+        General = 'g',
+        General_Upper = 'G',
+    };
+    FormatType type = FormatType::Default;
 
     template<class ParseContext = std::format_context>
     constexpr typename ParseContext::iterator parse(ParseContext& ctx)
@@ -846,20 +875,71 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
         // Width
         while(it != ctx.end())
         {
-            //TODO Nested width
             const auto c = *it;
             if(c >= '0' && c <= '9')
             {
                 width = width * 10 + (c - '0');
                 ++it;
+                continue;
             }
-            else
-                break;
+            if(c == '{')
+            {
+                throw std::invalid_argument("Nested width is not supported");
+            }
+
+            break;
         }
 
-        //TODO Precision
-        //TODO L = locale
-        //TODO type
+        // Precision
+        if(it != ctx.end() && *it == '.')
+        {
+            ++it;
+            precision = 0;
+            if(it != ctx.end())
+            {
+                if(*it == '{')
+                {
+                    throw std::invalid_argument("Nested precision is not supported");
+                }
+                else while(it != ctx.end())
+                {
+                    const auto c = *it;
+                    if(c >= '0' && c <= '9')
+                    {
+                        precision = precision * 10 + (c - '0');
+                        ++it;
+                        continue;
+                    }
+                    break;
+                }
+            }
+        }
+
+        // No locale-specific behaviour
+
+        // type
+        if(it != ctx.end())
+        {
+            switch(static_cast<FormatType>(*it))
+            {
+                case FormatType::Default:
+                case FormatType::Hex:
+                case FormatType::Hex_Upper:
+                case FormatType::Scientific:
+                case FormatType::Scientific_Upper:
+                case FormatType::Fixed:
+                case FormatType::Fixed_Upper:
+                case FormatType::General:
+                case FormatType::General_Upper:
+                {
+                    type = static_cast<FormatType>(*it);
+                    ++it;
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
 
         if(it != ctx.end() && *it != '}')
         {
@@ -880,6 +960,45 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
                 out << ' ';
             else
                 throw std::format_error("Invalid sign behaviour");
+        }
+        if(precision != static_cast<std::size_t>(-1))
+            out << setprecision(precision);
+        if(type != FormatType::Default)
+        {
+            // Format type itself
+            switch(type)
+            {
+                default:
+                case FormatType::Default:
+                    break;
+                case FormatType::Hex:
+                case FormatType::Hex_Upper:
+                    out << std::hexfloat;
+                    break;
+                case FormatType::Scientific:
+                case FormatType::Scientific_Upper:
+                    out << std::scientific;
+                    break;
+                case FormatType::Fixed:
+                case FormatType::Fixed_Upper:
+                    out << std::fixed;
+                    break;
+                case FormatType::General:
+                case FormatType::General_Upper:
+                    break;
+            }
+            // Upper-case versions
+            switch(type)
+            {
+                default:
+                    break;
+                case FormatType::Hex_Upper:
+                case FormatType::Scientific_Upper:
+                case FormatType::Fixed_Upper:
+                case FormatType::General_Upper:
+                    out << std::uppercase;
+                    break;
+            }
         }
         out << value;
 
@@ -903,11 +1022,13 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
                     if(hasSign)
                         out << str[0];
 
+                    // Zero-padding between sign character and the true value
                     while(out.tellp() < width - str.size() + (hasSign ? 1 : 0))
                         out << '0';
 
+                    // Value without sign
                     if(hasSign)
-                        out << str.data() + 1; // equivalent to sub_string(1)
+                        out << std::basic_string_view<CharT>(str.data()).substr(1);
                     else
                         out << str;
                 }
@@ -948,6 +1069,7 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
                 throw std::runtime_error("Unknown alignment character");
         }
 
+        // Copy to output
         {
             const auto str = out.str();
             std::copy(str.begin(), str.end(), ctx.out());

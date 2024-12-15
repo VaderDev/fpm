@@ -70,6 +70,7 @@ add_executable(fpm-test20
   #tests/power.cpp
   #tests/trigonometry.cpp
   tests/formatting.cpp
+  tests/formatting_wchar.cpp
 )
 set_target_properties(fpm-test20 PROPERTIES CXX_STANDARD 20)
 target_link_libraries(fpm-test20 PRIVATE fpm gtest_main)

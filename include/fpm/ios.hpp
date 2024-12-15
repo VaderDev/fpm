@@ -743,6 +743,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 #       include <format>
 #       include <sstream>
 #       include <string_view>
+#       include <iomanip>
 template<typename CharT, typename B, typename I, unsigned int F, bool R>
 struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
 {
@@ -962,7 +963,7 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
                 throw std::format_error("Invalid sign behaviour");
         }
         if(precision != static_cast<std::size_t>(-1))
-            out << setprecision(precision);
+            out << std::setprecision(precision);
         if(type != FormatType::Default)
         {
             // Format type itself

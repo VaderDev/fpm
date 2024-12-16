@@ -90,6 +90,51 @@ public:
         return static_cast<T>(m_value / FRACTION_MULT);
     }
 
+#pragma region fpm::fixed conversion
+
+    /// Change number of Fraction Bits.
+    template <typename I, unsigned int F, bool R>
+    FPM_NODISCARD constexpr inline explicit operator fixed<BaseType, I, F, R>() const noexcept
+    {
+        static_assert(F != FractionBits);
+        if(F > FractionBits) // Target has more bits
+        {
+            return fixed<BaseType, I, F, R>::from_raw_value(m_value << (F - FractionBits));
+        }
+        else // F < FractionBits // Target has less bits
+        {
+            return fixed<BaseType, I, F, R>::from_raw_value(m_value >> (FractionBits - F));
+        }
+    }
+
+    /// Change Base Type.
+    template <typename B, typename I, bool R>
+    FPM_NODISCARD constexpr inline explicit operator fixed<B, I, FractionBits, R>() const noexcept
+    {
+        static_assert(sizeof(B) != sizeof(BaseType));
+        return fixed<B, I, FractionBits, R>::from_raw_value(static_cast<B>(m_value));
+    }
+
+    /// Change Base Type and Fraction Bits.
+    template <typename B, typename I, unsigned int F, bool R>
+    FPM_NODISCARD constexpr inline explicit operator fixed<B, I, F, R>() const noexcept
+    {
+        static_assert(F != FractionBits);
+        static_assert(sizeof(B) != sizeof(BaseType));
+        if(sizeof(B) > sizeof(BaseType)) // New type is greater
+        {
+            const auto f = static_cast<fixed<B, I, FractionBits, R>>(*this);
+            return static_cast<fixed<B, I, F, R>>(f);;
+        }
+        else // sizeof(B) < sizeof(BaseType) // Old type is greater
+        {
+            const auto f = static_cast<fixed<BaseType, I, F, R>>(*this);
+            return static_cast<fixed<B, I, F, R>>(f);;
+        }
+    }
+
+#pragma endregion
+
 #pragma endregion
 
 #pragma region Raw Values

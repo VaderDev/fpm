@@ -83,8 +83,8 @@ TEST(trigonometry, tan)
     }
 
 #ifndef NDEBUG
-    EXPECT_DEATH(tan(P::pi()/2), "");
-    EXPECT_DEATH(tan(-P::pi()/2), "");
+    EXPECT_DEATH(auto v = tan(P::pi()/2), "");
+    EXPECT_DEATH(auto v = tan(-P::pi()/2), "");
 #endif
 }
 
@@ -159,7 +159,7 @@ TEST(trigonometry, atan2)
     }
 
 #ifndef NDEBUG
-    EXPECT_DEATH(atan2(P(0), P(0)), "");
+    EXPECT_DEATH(auto v = atan2(P(0), P(0)), "");
 #endif
 }
 

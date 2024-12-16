@@ -8,6 +8,14 @@
 #include <limits>
 #include <type_traits>
 
+#ifndef FPM_NODISCARD
+#   if __cplusplus >= 201703L
+#       define FPM_NODISCARD [[nodiscard]]
+#   else
+#       define FPM_NODISCARD
+#   endif
+#endif
+
 namespace fpm
 {
 
@@ -25,56 +33,68 @@ class fixed
     static_assert(sizeof(IntermediateType) > sizeof(BaseType), "IntermediateType must be larger than BaseType");
     static_assert(std::is_signed<IntermediateType>::value == std::is_signed<BaseType>::value, "IntermediateType must have same signedness as BaseType");
 
-    // Although this value fits in the BaseType in terms of bits, if there's only one integral bit, this value
-    // is incorrect (flips from positive to negative), so we must extend the size to IntermediateType.
+    /// Although this value fits in the BaseType in terms of bits, if there's only one integral bit, this value
+    /// is incorrect (flips from positive to negative), so we must extend the size to IntermediateType.
     static constexpr IntermediateType FRACTION_MULT = IntermediateType(1) << FractionBits;
+
+#pragma region Constructors
 
     struct raw_construct_tag {};
     constexpr inline fixed(BaseType val, raw_construct_tag) noexcept : m_value(val) {}
 
 public:
-    inline fixed() noexcept = default;
+    constexpr inline fixed() noexcept = default;
 
-    // Converts an integral number to the fixed-point type.
-    // Like static_cast, this truncates bits that don't fit.
+    /// Converts an integral number to the fixed-point type.
+    /// Like static_cast, this truncates bits that don't fit.
     template <typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
     constexpr inline explicit fixed(T val) noexcept
         : m_value(static_cast<BaseType>(val * FRACTION_MULT))
     {}
 
-    // Converts an floating-point number to the fixed-point type.
-    // Like static_cast, this truncates bits that don't fit.
+    /// Converts a floating-point number to the fixed-point type.
+    /// Like static_cast, this truncates bits that don't fit.
     template <typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
     constexpr inline explicit fixed(T val) noexcept
-        : m_value(static_cast<BaseType>((EnableRounding) ?
-                       (val >= 0.0) ? (val * FRACTION_MULT + T{0.5}) : (val * FRACTION_MULT - T{0.5})
-                      : (val * FRACTION_MULT)))
+        : m_value(
+            static_cast<BaseType>((EnableRounding) ?
+            (val >= 0.0) ? (val * FRACTION_MULT + T{0.5}) : (val * FRACTION_MULT - T{0.5}) :
+            (val * FRACTION_MULT))
+        )
     {}
 
-    // Constructs from another fixed-point type with possibly different underlying representation.
-    // Like static_cast, this truncates bits that don't fit.
+    /// Constructs from another fixed-point type with possibly different underlying representation.
+    /// Like static_cast, this truncates bits that don't fit.
     template <typename B, typename I, unsigned int F, bool R>
     constexpr inline explicit fixed(fixed<B,I,F,R> val) noexcept
         : m_value(from_fixed_point<F>(val.raw_value()).raw_value())
     {}
 
-    // Explicit conversion to a floating-point type
+#pragma endregion
+
+#pragma region Conversion Operators
+
+    /// Explicit conversion to a floating-point type
     template <typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
-    constexpr inline explicit operator T() const noexcept
+    FPM_NODISCARD constexpr inline explicit operator T() const noexcept
     {
         return static_cast<T>(m_value) / FRACTION_MULT;
     }
 
-    // Explicit conversion to an integral type
+    /// Explicit conversion to an integral type
     template <typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-    constexpr inline explicit operator T() const noexcept
+    FPM_NODISCARD constexpr inline explicit operator T() const noexcept
     {
         return static_cast<T>(m_value / FRACTION_MULT);
     }
 
-    // Returns the raw underlying value of this type.
-    // Do not use this unless you know what you're doing.
-    constexpr inline BaseType raw_value() const noexcept
+#pragma endregion
+
+#pragma region Raw Values
+
+    /// Returns the raw underlying value of this type.
+    /// Do not use this unless you know what you're doing.
+    FPM_NODISCARD constexpr inline BaseType raw_value() const noexcept
     {
         return m_value;
     }
@@ -83,7 +103,7 @@ public:
     //! \tparam NumFractionBits the number of bits used by the fraction in \a value.
     //! \param value the integer fixed-point number
     template <unsigned int NumFractionBits, typename T, typename std::enable_if<(NumFractionBits > FractionBits)>::type* = nullptr>
-    static constexpr inline fixed from_fixed_point(T value) noexcept
+    FPM_NODISCARD static constexpr inline fixed from_fixed_point(T value) noexcept
     {
         // To correctly round the last bit in the result, we need one more bit of information.
         // We do this by multiplying by two before dividing and adding the LSB to the real result.
@@ -96,35 +116,42 @@ public:
     }
 
     template <unsigned int NumFractionBits, typename T, typename std::enable_if<(NumFractionBits <= FractionBits)>::type* = nullptr>
-    static constexpr inline fixed from_fixed_point(T value) noexcept
+    FPM_NODISCARD static constexpr inline fixed from_fixed_point(T value) noexcept
     {
         return fixed(static_cast<BaseType>(
             value * (T(1) << (FractionBits - NumFractionBits))),
             raw_construct_tag{});
     }
 
-    // Constructs a fixed-point number from its raw underlying value.
-    // Do not use this unless you know what you're doing.
-    static constexpr inline fixed from_raw_value(BaseType value) noexcept
+    /// Constructs a fixed-point number from its raw underlying value.
+    /// Do not use this unless you know what you're doing.
+    FPM_NODISCARD static constexpr inline fixed from_raw_value(BaseType value) noexcept
     {
         return fixed(value, raw_construct_tag{});
     }
 
-    //
-    // Constants
-    //
-    static constexpr fixed e() { return from_fixed_point<61>(6267931151224907085ll); }
-    static constexpr fixed pi() { return from_fixed_point<61>(7244019458077122842ll); }
-    static constexpr fixed half_pi() { return from_fixed_point<62>(7244019458077122842ll); }
-    static constexpr fixed two_pi() { return from_fixed_point<60>(7244019458077122842ll); }
+#pragma endregion
 
-    //
-    // Arithmetic member operators
-    //
+#pragma region Constants
 
-    constexpr inline fixed operator-() const noexcept
+    FPM_NODISCARD static constexpr fixed e() { return from_fixed_point<61>(6267931151224907085ll); }
+    FPM_NODISCARD static constexpr fixed pi() { return from_fixed_point<61>(7244019458077122842ll); }
+    FPM_NODISCARD static constexpr fixed half_pi() { return from_fixed_point<62>(7244019458077122842ll); }
+    FPM_NODISCARD static constexpr fixed two_pi() { return from_fixed_point<60>(7244019458077122842ll); }
+
+#pragma endregion
+
+#pragma region Arithmetic member operators
+
+    template <typename std::enable_if<std::is_signed<BaseType>::value>::type* = nullptr>
+    FPM_NODISCARD constexpr inline fixed operator-() const noexcept
     {
         return fixed::from_raw_value(-m_value);
+    }
+
+    FPM_NODISCARD constexpr inline operator bool() const noexcept
+    {
+        return m_value != 0;
     }
 
     inline fixed& operator+=(const fixed& y) noexcept
@@ -198,158 +225,184 @@ public:
         return *this;
     }
 
+#pragma endregion
+
 private:
     BaseType m_value;
 };
 
-//
-// Convenience typedefs
-//
+#pragma region Convenience typedefs
+
+using fixed_8_8 = fixed<std::int16_t, std::int32_t, 8>;
 
 using fixed_16_16 = fixed<std::int32_t, std::int64_t, 16>;
 using fixed_24_8 = fixed<std::int32_t, std::int64_t, 8>;
 using fixed_8_24 = fixed<std::int32_t, std::int64_t, 24>;
 
-//
-// Addition
-//
+#pragma endregion
+
+#pragma region Addition
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> operator+(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator+(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
-    return fixed<B, I, F, R>(x) += y;
+    return fixed<B, I, F, R>::from_raw_value(x.raw_value() + y.raw_value());
 }
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr inline fixed<B, I, F, R> operator+(const fixed<B, I, F, R>& x, T y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator+(const fixed<B, I, F, R>& x, T y) noexcept
 {
-    return fixed<B, I, F, R>(x) += y;
+    return x + fixed<B, I, F, R>(y);
 }
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr inline fixed<B, I, F, R> operator+(T x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator+(T x, const fixed<B, I, F, R>& y) noexcept
 {
-    return fixed<B, I, F, R>(y) += x;
+    return fixed<B, I, F, R>(x) + y;
 }
 
-//
-// Subtraction
-//
+#pragma endregion
+
+#pragma region Subtraction
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> operator-(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator-(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
-    return fixed<B, I, F, R>(x) -= y;
+    return fixed<B, I, F, R>::from_raw_value(x.raw_value() - y.raw_value());
 }
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr inline fixed<B, I, F, R> operator-(const fixed<B, I, F, R>& x, T y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator-(const fixed<B, I, F, R>& x, T y) noexcept
 {
-    return fixed<B, I, F, R>(x) -= y;
+    return x - fixed<B, I, F, R>(y);
 }
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr inline fixed<B, I, F, R> operator-(T x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator-(T x, const fixed<B, I, F, R>& y) noexcept
 {
-    return fixed<B, I, F, R>(x) -= y;
+    return fixed<B, I, F, R>(x) - y;
 }
 
-//
-// Multiplication
-//
+#pragma endregion
+
+#pragma region Multiplication
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> operator*(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
     return fixed<B, I, F, R>(x) *= y;
 }
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr inline fixed<B, I, F, R> operator*(const fixed<B, I, F, R>& x, T y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(const fixed<B, I, F, R>& x, T y) noexcept
 {
     return fixed<B, I, F, R>(x) *= y;
 }
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr inline fixed<B, I, F, R> operator*(T x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(T x, const fixed<B, I, F, R>& y) noexcept
 {
     return fixed<B, I, F, R>(y) *= x;
 }
+#pragma endregion
 
-//
-// Division
-//
+#pragma region Division
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> operator/(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
     return fixed<B, I, F, R>(x) /= y;
 }
 
 template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr inline fixed<B, I, F, R> operator/(const fixed<B, I, F, R>& x, T y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(const fixed<B, I, F, R>& x, T y) noexcept
 {
     return fixed<B, I, F, R>(x) /= y;
 }
 
 template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-constexpr inline fixed<B, I, F, R> operator/(T x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(T x, const fixed<B, I, F, R>& y) noexcept
 {
     return fixed<B, I, F, R>(x) /= y;
 }
 
-//
-// Comparison operators
-//
+#pragma endregion
+
+#pragma region Comparison operators
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool operator==(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline bool operator==(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
     return x.raw_value() == y.raw_value();
 }
 
+template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+FPM_NODISCARD constexpr inline bool operator==(const fixed<B, I, F, R>& x, const T y) noexcept
+{
+    return x == fixed<B, I, F, R>{y};
+}
+
+template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+FPM_NODISCARD constexpr inline bool operator==(const T x, const fixed<B, I, F, R>& y) noexcept
+{
+    return fixed<B, I, F, R>{x} == y;
+}
+
+#if __cplusplus >= 202002L
+
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool operator!=(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline auto operator<=>(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+{
+    return x.raw_value() <=> y.raw_value();
+}
+
+#else
+
+template <typename B, typename I, unsigned int F, bool R>
+FPM_NODISCARD constexpr inline bool operator!=(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
     return x.raw_value() != y.raw_value();
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool operator<(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline bool operator<(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
     return x.raw_value() < y.raw_value();
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool operator>(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline bool operator>(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
     return x.raw_value() > y.raw_value();
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool operator<=(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline bool operator<=(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
     return x.raw_value() <= y.raw_value();
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool operator>=(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
+FPM_NODISCARD constexpr inline bool operator>=(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
     return x.raw_value() >= y.raw_value();
 }
 
+#endif
+#pragma endregion
+
 namespace detail
 {
-// Number of base-10 digits required to fully represent a number of bits
-static constexpr int max_digits10(int bits)
+/// Number of base-10 digits required to fully represent a number of bits.
+FPM_NODISCARD static constexpr inline int max_digits10(int bits) noexcept
 {
     // 8.24 fixed-point equivalent of (int)ceil(bits * std::log10(2));
     using T = long long;
     return static_cast<int>((T{bits} * 5050445 + (T{1} << 24) - 1) >> 24);
 }
 
-// Number of base-10 digits that can be fully represented by a number of bits
-static constexpr int digits10(int bits)
+/// Number of base-10 digits that can be fully represented by a number of bits.
+FPM_NODISCARD static constexpr inline int digits10(int bits) noexcept
 {
     // 8.24 fixed-point equivalent of (int)(bits * std::log10(2));
     using T = long long;
@@ -369,13 +422,12 @@ struct hash<fpm::fixed<B,I,F,R>>
     using argument_type = fpm::fixed<B, I, F, R>;
     using result_type = std::size_t;
 
-    result_type operator()(argument_type arg) const noexcept(noexcept(std::declval<std::hash<B>>()(arg.raw_value()))) {
-        return m_hash(arg.raw_value());
+    FPM_NODISCARD result_type operator()(argument_type arg) const noexcept(noexcept(std::declval<std::hash<B>>()(arg.raw_value()))) {
+        return std::hash<B>{}(arg.raw_value());
     }
-
-private:
-    std::hash<B> m_hash;
 };
+
+#pragma region numeric_limits
 
 template <typename B, typename I, unsigned int F, bool R>
 struct numeric_limits<fpm::fixed<B,I,F,R>>
@@ -484,6 +536,8 @@ template <typename B, typename I, unsigned int F, bool R>
 constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::traps;
 template <typename B, typename I, unsigned int F, bool R>
 constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::tinyness_before;
+
+#pragma endregion
 
 }
 

@@ -41,6 +41,7 @@ add_executable(fpm-test
   tests/arithmetic.cpp
   tests/arithmetic_int.cpp
   tests/basic_math.cpp
+  tests/constexpr.cpp
   tests/constants.cpp
   tests/conversion.cpp
   tests/classification.cpp
@@ -61,23 +62,10 @@ target_link_libraries(fpm-test PRIVATE fpm gtest_main)
 gtest_add_tests(TARGET fpm-test)
 
 add_executable(fpm-test20
-  #tests/arithmetic.cpp
-  #tests/arithmetic_int.cpp
-  #tests/basic_math.cpp
-  #tests/constants.cpp
-  #tests/conversion.cpp
-  #tests/classification.cpp
-  #tests/customizations.cpp
-  #tests/detail.cpp
-  #tests/input.cpp
-  #tests/manip.cpp
-  #tests/nearest.cpp
-  #tests/output.cpp
-  #tests/power.cpp
-  #tests/trigonometry.cpp
   tests/arithmetic.cpp
   tests/arithmetic_int.cpp
   tests/basic_math.cpp
+  tests/constexpr.cpp
   tests/constants.cpp
   tests/conversion.cpp
   tests/classification.cpp

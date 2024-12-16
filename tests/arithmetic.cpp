@@ -39,7 +39,7 @@ TEST(arithmethic, division)
     EXPECT_EQ(P(-3.5 / -7.25), P(-3.5) / P(-7.25));
 
 #ifndef NDEBUG
-    EXPECT_DEATH(P(1) / P(0), "");
+    EXPECT_DEATH(auto v = P(1) / P(0), "");
 #endif
 }
 

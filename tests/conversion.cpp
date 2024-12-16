@@ -6,7 +6,7 @@ using Q = fpm::fixed_24_8;
 
 TEST(conversion, construction)
 {
-    P x;
+    P x{};
 }
 
 TEST(conversion, copy)

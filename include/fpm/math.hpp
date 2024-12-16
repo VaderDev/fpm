@@ -11,14 +11,12 @@
 namespace fpm
 {
 
-//
-// Helper functions
-//
+#pragma region Helper functions
 namespace detail
 {
 
-// Returns the index of the most-signifcant set bit
-inline long find_highest_bit(unsigned long long value) noexcept
+/// Returns the index of the most-signifcant set bit
+FPM_NODISCARD inline long find_highest_bit(unsigned long long value) noexcept
 {
     assert(value != 0);
 #if defined(_MSC_VER)
@@ -41,113 +39,115 @@ inline long find_highest_bit(unsigned long long value) noexcept
 }
 
 }
+#pragma endregion
 
-//
-// Classification methods
-//
+#pragma region Classification methods
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline int fpclassify(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD constexpr inline int fpclassify(fixed<B, I, F, R> x) noexcept
 {
     return (x.raw_value() == 0) ? FP_ZERO : FP_NORMAL;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool isfinite(fixed<B, I, F, R>) noexcept
+FPM_NODISCARD constexpr inline bool isfinite(fixed<B, I, F, R>) noexcept
 {
     return true;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool isinf(fixed<B, I, F, R>) noexcept
+FPM_NODISCARD constexpr inline bool isinf(fixed<B, I, F, R>) noexcept
 {
     return false;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool isnan(fixed<B, I, F, R>) noexcept
+FPM_NODISCARD constexpr inline bool isnan(fixed<B, I, F, R>) noexcept
 {
     return false;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool isnormal(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD constexpr inline bool isnormal(fixed<B, I, F, R> x) noexcept
 {
     return x.raw_value() != 0;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool signbit(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD constexpr inline bool signbit(fixed<B, I, F, R> x) noexcept
 {
     return x.raw_value() < 0;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool isgreater(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD constexpr inline bool isgreater(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     return x > y;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool isgreaterequal(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD constexpr inline bool isgreaterequal(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     return x >= y;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool isless(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD constexpr inline bool isless(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     return x < y;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool islessequal(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD constexpr inline bool islessequal(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     return x <= y;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool islessgreater(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD constexpr inline bool islessgreater(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     return x != y;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline bool isunordered(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD constexpr inline bool isunordered(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     return false;
 }
 
-//
-// Nearest integer operations
-//
+#pragma endregion
+
+#pragma region Nearest integer operations
+
 template <typename B, typename I, unsigned int F, bool R>
-inline fixed<B, I, F, R> ceil(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> ceil(fixed<B, I, F, R> x) noexcept
 {
     constexpr auto FRAC = B(1) << F;
     auto value = x.raw_value();
-    if (value > 0) value += FRAC - 1;
+    if (value > 0)
+        value += FRAC - 1;
     return fixed<B, I, F, R>::from_raw_value(value / FRAC * FRAC);
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-inline fixed<B, I, F, R> floor(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> floor(fixed<B, I, F, R> x) noexcept
 {
     constexpr auto FRAC = B(1) << F;
     auto value = x.raw_value();
-    if (value < 0) value -= FRAC - 1;
+    if (value < 0)
+        value -= FRAC - 1;
     return fixed<B, I, F, R>::from_raw_value(value / FRAC * FRAC);
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-inline fixed<B, I, F, R> trunc(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> trunc(fixed<B, I, F, R> x) noexcept
 {
     constexpr auto FRAC = B(1) << F;
     return fixed<B, I, F, R>::from_raw_value(x.raw_value() / FRAC * FRAC);
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-inline fixed<B, I, F, R> round(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> round(fixed<B, I, F, R> x) noexcept
 {
     constexpr auto FRAC = B(1) << F;
     auto value = x.raw_value() / (FRAC / 2);
@@ -155,7 +155,7 @@ inline fixed<B, I, F, R> round(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> nearbyint(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD fixed<B, I, F, R> nearbyint(fixed<B, I, F, R> x) noexcept
 {
     // Rounding mode is assumed to be FE_TONEAREST
     constexpr auto FRAC = B(1) << F;
@@ -168,23 +168,24 @@ fixed<B, I, F, R> nearbyint(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> rint(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> rint(fixed<B, I, F, R> x) noexcept
 {
     // Rounding mode is assumed to be FE_TONEAREST
     return nearbyint(x);
 }
 
-//
-// Mathematical functions
-//
+#pragma endregion
+
+#pragma region Mathematical functions
+
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> abs(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> abs(fixed<B, I, F, R> x) noexcept
 {
     return (x >= fixed<B, I, F, R>{0}) ? x : -x;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> fmod(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> fmod(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     return
         assert(y.raw_value() != 0),
@@ -192,7 +193,7 @@ constexpr inline fixed<B, I, F, R> fmod(fixed<B, I, F, R> x, fixed<B, I, F, R> y
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> remainder(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> remainder(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     return
         assert(y.raw_value() != 0),
@@ -200,7 +201,7 @@ constexpr inline fixed<B, I, F, R> remainder(fixed<B, I, F, R> x, fixed<B, I, F,
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-inline fixed<B, I, F, R> remquo(fixed<B, I, F, R> x, fixed<B, I, F, R> y, int* quo) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> remquo(fixed<B, I, F, R> x, fixed<B, I, F, R> y, int* quo) noexcept
 {
     assert(y.raw_value() != 0);
     assert(quo != nullptr);
@@ -208,12 +209,12 @@ inline fixed<B, I, F, R> remquo(fixed<B, I, F, R> x, fixed<B, I, F, R> y, int* q
     return fixed<B, I, F, R>::from_raw_value(x.raw_value() % y.raw_value());
 }
 
-//
-// Manipulation functions
-//
+#pragma endregion
+
+#pragma region Manipulation functions
 
 template <typename B, typename I, unsigned int F, bool R, typename C, typename J, unsigned int G, bool S>
-constexpr inline fixed<B, I, F, R> copysign(fixed<B, I, F, R> x, fixed<C, J, G, S> y) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> copysign(fixed<B, I, F, R> x, fixed<C, J, G, S> y) noexcept
 {
     return
         x = abs(x),
@@ -221,7 +222,7 @@ constexpr inline fixed<B, I, F, R> copysign(fixed<B, I, F, R> x, fixed<C, J, G, 
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> nextafter(fixed<B, I, F, R> from, fixed<B, I, F, R> to) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> nextafter(fixed<B, I, F, R> from, fixed<B, I, F, R> to) noexcept
 {
     return from == to ? to :
            to > from ? fixed<B, I, F, R>::from_raw_value(from.raw_value() + 1)
@@ -229,13 +230,13 @@ constexpr inline fixed<B, I, F, R> nextafter(fixed<B, I, F, R> from, fixed<B, I,
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> nexttoward(fixed<B, I, F, R> from, fixed<B, I, F, R> to) noexcept
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> nexttoward(fixed<B, I, F, R> from, fixed<B, I, F, R> to) noexcept
 {
     return nextafter(from, to);
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-inline fixed<B, I, F, R> modf(fixed<B, I, F, R> x, fixed<B, I, F, R>* iptr) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> modf(fixed<B, I, F, R> x, fixed<B, I, F, R>* iptr) noexcept
 {
     const auto raw = x.raw_value();
     constexpr auto FRAC = B{1} << F;
@@ -243,13 +244,12 @@ inline fixed<B, I, F, R> modf(fixed<B, I, F, R> x, fixed<B, I, F, R>* iptr) noex
     return fixed<B, I, F, R>::from_raw_value(raw % FRAC);
 }
 
+#pragma endregion
 
-//
-// Power functions
-//
+#pragma region Power functions
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
-fixed<B, I, F, R> pow(fixed<B, I, F, R> base, T exp) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> pow(fixed<B, I, F, R> base, T exp) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
 
@@ -283,7 +283,7 @@ fixed<B, I, F, R> pow(fixed<B, I, F, R> base, T exp) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> pow(fixed<B, I, F, R> base, fixed<B, I, F, R> exp) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> pow(fixed<B, I, F, R> base, fixed<B, I, F, R> exp) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
 
@@ -292,14 +292,12 @@ fixed<B, I, F, R> pow(fixed<B, I, F, R> base, fixed<B, I, F, R> exp) noexcept
         return Fixed(0);
     }
 
-    if (exp < Fixed(0))
-    {
+    if (exp < Fixed(0)) {
         return 1 / pow(base, -exp);
     }
 
     constexpr auto FRAC = B(1) << F;
-    if (exp.raw_value() % FRAC == 0)
-    {
+    if (exp.raw_value() % FRAC == 0) {
         // Non-fractional exponents are easier to calculate
         return pow(base, exp.raw_value() / FRAC);
     }
@@ -312,7 +310,7 @@ fixed<B, I, F, R> pow(fixed<B, I, F, R> base, fixed<B, I, F, R> exp) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> exp(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> exp(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     if (x < Fixed(0)) {
@@ -333,7 +331,7 @@ fixed<B, I, F, R> exp(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> exp2(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> exp2(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     if (x < Fixed(0)) {
@@ -354,13 +352,13 @@ fixed<B, I, F, R> exp2(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> expm1(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> expm1(fixed<B, I, F, R> x) noexcept
 {
     return exp(x) - 1;
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> log2(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> log2(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     assert(x > Fixed(0));
@@ -386,36 +384,34 @@ fixed<B, I, F, R> log2(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> log(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> log(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     return log2(x) / log2(Fixed::e());
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> log10(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> log10(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     return log2(x) / log2(Fixed(10));
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> log1p(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> log1p(fixed<B, I, F, R> x) noexcept
 {
     return log(1 + x);
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> cbrt(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> cbrt(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
 
-    if (x == Fixed(0))
-    {
+    if (x == Fixed(0)) {
         return x;
     }
-    if (x < Fixed(0))
-    {
+    if (x < Fixed(0)) {
         return -cbrt(-x);
     }
     assert(x >= Fixed(0));
@@ -428,14 +424,11 @@ fixed<B, I, F, R> cbrt(fixed<B, I, F, R> x) noexcept
     I num = I{x.raw_value()};
     I res = 0;
 
-    const auto do_round = [&]
-    {
-        for (; ofs >= 0; ofs -= 3)
-        {
+    const auto do_round = [&] {
+        for (; ofs >= 0; ofs -= 3) {
             res += res;
             const I val = (3*res*(res + 1) + 1) << ofs;
-            if (num >= val)
-            {
+            if (num >= val) {
                 num -= val;
                 res++;
             }
@@ -458,13 +451,12 @@ fixed<B, I, F, R> cbrt(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> sqrt(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> sqrt(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
 
     assert(x >= Fixed(0));
-    if (x == Fixed(0))
-    {
+    if (x == Fixed(0)) {
         return x;
     }
 
@@ -476,20 +468,17 @@ fixed<B, I, F, R> sqrt(fixed<B, I, F, R> x) noexcept
     I res = 0;
 
     // "bit" starts at the greatest power of four that's less than the argument.
-    for (I bit = I{1} << ((detail::find_highest_bit(x.raw_value()) + F) / 2 * 2); bit != 0; bit >>= 2)
-    {
+    for (I bit = I{1} << ((detail::find_highest_bit(x.raw_value()) + F) / 2 * 2); bit != 0; bit >>= 2) {
         const I val = res + bit;
         res >>= 1;
-        if (num >= val)
-        {
+        if (num >= val) {
             num -= val;
             res += bit;
         }
     }
 
     // Round the last digit up if necessary
-    if (num > res)
-    {
+    if (num > res) {
         res++;
     }
 
@@ -497,7 +486,7 @@ fixed<B, I, F, R> sqrt(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> hypot(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> hypot(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 {
     assert(x != 0 || y != 0);
     return sqrt(x*x + y*y);
@@ -508,7 +497,7 @@ fixed<B, I, F, R> hypot(fixed<B, I, F, R> x, fixed<B, I, F, R> y) noexcept
 //
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> sin(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> sin(fixed<B, I, F, R> x) noexcept
 {
     // This sine uses a fifth-order curve-fitting approximation originally
     // described by Jasper Vijn on coranac.com which has a worst-case
@@ -541,7 +530,7 @@ fixed<B, I, F, R> sin(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-inline fixed<B, I, F, R> cos(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> cos(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     if (x > Fixed(0)) {  // Prevent an overflow due to the addition of π/2
@@ -552,7 +541,7 @@ inline fixed<B, I, F, R> cos(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-inline fixed<B, I, F, R> tan(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> tan(fixed<B, I, F, R> x) noexcept
 {
     auto cx = cos(x);
 
@@ -565,9 +554,9 @@ inline fixed<B, I, F, R> tan(fixed<B, I, F, R> x) noexcept
 
 namespace detail {
 
-// Calculates atan(x) assuming that x is in the range [0,1]
+/// Calculates atan(x) assuming that x is in the range [0,1].
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> atan_sanitized(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> atan_sanitized(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     assert(x >= Fixed(0) && x <= Fixed(1));
@@ -580,14 +569,14 @@ fixed<B, I, F, R> atan_sanitized(fixed<B, I, F, R> x) noexcept
     return ((fA*xx + fB)*xx + fC)*x;
 }
 
-// Calculate atan(y / x), assuming x != 0.
-//
-// If x is very, very small, y/x can easily overflow the fixed-point range.
-// If q = y/x and q > 1, atan(q) would calculate atan(1/q) as intermediate step
-// anyway. We can shortcut that here and avoid the loss of information, thus
-// improving the accuracy of atan(y/x) for very small x.
+/// Calculate atan(y / x), assuming x != 0.
+///
+/// If x is very, very small, y/x can easily overflow the fixed-point range.
+/// If q = y/x and q > 1, atan(q) would calculate atan(1/q) as intermediate step
+/// anyway. We can shortcut that here and avoid the loss of information, thus
+/// improving the accuracy of atan(y/x) for very small x.
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> atan_div(fixed<B, I, F, R> y, fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> atan_div(fixed<B, I, F, R> y, fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     assert(x != Fixed(0));
@@ -616,7 +605,7 @@ fixed<B, I, F, R> atan_div(fixed<B, I, F, R> y, fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> atan(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> atan(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     if (x < Fixed(0))
@@ -633,7 +622,7 @@ fixed<B, I, F, R> atan(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> asin(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> asin(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     assert(x >= Fixed(-1) && x <= Fixed(+1));
@@ -647,7 +636,7 @@ fixed<B, I, F, R> asin(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> acos(fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> acos(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     assert(x >= Fixed(-1) && x <= Fixed(+1));
@@ -661,7 +650,7 @@ fixed<B, I, F, R> acos(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-fixed<B, I, F, R> atan2(fixed<B, I, F, R> y, fixed<B, I, F, R> x) noexcept
+FPM_NODISCARD inline fixed<B, I, F, R> atan2(fixed<B, I, F, R> y, fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;
     if (x == Fixed(0))
@@ -678,6 +667,8 @@ fixed<B, I, F, R> atan2(fixed<B, I, F, R> y, fixed<B, I, F, R> x) noexcept
     }
     return ret;
 }
+
+#pragma endregion
 
 }
 

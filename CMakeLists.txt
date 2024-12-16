@@ -48,6 +48,7 @@ add_executable(fpm-test
   tests/customizations.cpp
   tests/detail.cpp
   tests/input.cpp
+  tests/int128.cpp
   tests/manip.cpp
   tests/nearest.cpp
   tests/output.cpp
@@ -74,6 +75,7 @@ add_executable(fpm-test20
   tests/formatting.cpp
   tests/formatting_wchar.cpp
   tests/input.cpp
+  tests/int128.cpp
   tests/manip.cpp
   tests/nearest.cpp
   tests/output.cpp

@@ -31,7 +31,7 @@ class fixed
     static_assert(FractionBits > 0, "FractionBits must be greater than zero");
     static_assert(FractionBits <= sizeof(BaseType) * 8 - 1, "BaseType must at least be able to contain entire fraction, with space for at least one integral bit");
     static_assert(sizeof(IntermediateType) > sizeof(BaseType), "IntermediateType must be larger than BaseType");
-    static_assert(std::is_signed<IntermediateType>::value == std::is_signed<BaseType>::value, "IntermediateType must have same signedness as BaseType");
+    static_assert(std::numeric_limits<IntermediateType>::is_signed == std::numeric_limits<BaseType>::is_signed, "IntermediateType must have same signedness as BaseType");
 
     /// Although this value fits in the BaseType in terms of bits, if there's only one integral bit, this value
     /// is incorrect (flips from positive to negative), so we must extend the size to IntermediateType.
@@ -541,6 +541,7 @@ constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::tinyness_before;
 
 }
 
+// Type testing
 namespace fpm
 {
 template<typename T>

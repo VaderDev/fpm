@@ -47,6 +47,7 @@ add_executable(fpm-test
   tests/classification.cpp
   tests/customizations.cpp
   tests/detail.cpp
+  tests/fraction_only.cpp
   tests/input.cpp
   tests/int128.cpp
   tests/manip.cpp
@@ -75,6 +76,7 @@ add_executable(fpm-test20
   tests/detail.cpp
   tests/formatting.cpp
   tests/formatting_wchar.cpp
+  tests/fraction_only.cpp
   tests/input.cpp
   tests/int128.cpp
   tests/manip.cpp

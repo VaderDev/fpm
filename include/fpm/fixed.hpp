@@ -29,7 +29,7 @@ class fixed
 {
     static_assert(std::is_integral<BaseType>::value, "BaseType must be an integral type");
     static_assert(FractionBits > 0, "FractionBits must be greater than zero");
-    static_assert(FractionBits <= sizeof(BaseType) * 8 - 1, "BaseType must at least be able to contain entire fraction, with space for at least one integral bit");
+    static_assert(FractionBits <= sizeof(BaseType) * 8 - (std::numeric_limits<BaseType>::is_signed ? 1 : 0), "BaseType must at least be able to contain entire fraction, with space for at least one integral bit");
     static_assert(sizeof(IntermediateType) > sizeof(BaseType), "IntermediateType must be larger than BaseType");
     static_assert(std::numeric_limits<IntermediateType>::is_signed == std::numeric_limits<BaseType>::is_signed, "IntermediateType must have same signedness as BaseType");
 
@@ -188,18 +188,12 @@ public:
 
 #pragma endregion
 
-#pragma region Arithmetic member operators
-
-    template <typename std::enable_if<std::is_signed<BaseType>::value>::type* = nullptr>
-    FPM_NODISCARD constexpr inline fixed operator-() const noexcept
-    {
-        return fixed::from_raw_value(-m_value);
-    }
-
-    FPM_NODISCARD constexpr inline operator bool() const noexcept
+    FPM_NODISCARD constexpr inline explicit operator bool() const noexcept
     {
         return m_value != 0;
     }
+
+#pragma region Arithmetic member operators
 
 #pragma region Addition
 
@@ -303,6 +297,12 @@ using fixed_24_8 = fixed<std::int32_t, std::int64_t, 8>;
 using fixed_8_24 = fixed<std::int32_t, std::int64_t, 24>;
 
 #pragma endregion
+
+template <typename B, typename I, unsigned int F, bool R, typename std::enable_if<std::is_signed<B>::value>::type* = nullptr>
+FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator-(const fixed<B, I, F, R>& x) noexcept
+{
+    return fixed<B, I, F, R>::from_raw_value(-x.raw_value());
+}
 
 #pragma region Arithmetic operators
 

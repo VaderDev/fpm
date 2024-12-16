@@ -178,7 +178,7 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> rint(fixed<B, I, F, R> x) noexc
 
 #pragma region Mathematical functions
 
-template <typename B, typename I, unsigned int F, bool R>
+template <typename B, typename I, unsigned int F, bool R, typename std::enable_if<std::is_signed<B>::value>::type* = nullptr>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> abs(fixed<B, I, F, R> x) noexcept
 {
     return (x >= fixed<B, I, F, R>{0}) ? x : -x;
@@ -604,7 +604,7 @@ FPM_NODISCARD inline fixed<B, I, F, R> atan_div(fixed<B, I, F, R> y, fixed<B, I,
 
 }
 
-template <typename B, typename I, unsigned int F, bool R>
+template <typename B, typename I, unsigned int F, bool R, typename std::enable_if<std::is_signed<B>::value>::type* = nullptr>
 FPM_NODISCARD inline fixed<B, I, F, R> atan(fixed<B, I, F, R> x) noexcept
 {
     using Fixed = fixed<B, I, F, R>;

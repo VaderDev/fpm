@@ -492,9 +492,9 @@ FPM_NODISCARD inline fixed<B, I, F, R> hypot(fixed<B, I, F, R> x, fixed<B, I, F,
     return sqrt(x*x + y*y);
 }
 
-//
-// Trigonometry functions
-//
+#pragma endregion
+
+#pragma region Trigonometry functions
 
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD inline fixed<B, I, F, R> sin(fixed<B, I, F, R> x) noexcept

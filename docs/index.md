@@ -11,7 +11,7 @@ It is designed to serve as a drop-in replacement for floating-point types and ai
 ```c++
 namespace fpm {
     template <typename BaseType, typename IntermediateType, unsigned int FractionBits>
-    class fixed;
+    struct fixed;
 }
 ```
 **Note:** It's recommended to use a *signed* integer type for `BaseType` (and `IntermediateType`) to emulate floating-point numbers

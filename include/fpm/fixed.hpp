@@ -25,7 +25,7 @@ namespace fpm
 //! \tparam FractionBits     the number of bits of the BaseType used to store the fraction
 //! \tparam EnableRounding   enable rounding of LSB for multiplication, division, and type conversion
 template <typename BaseType, typename IntermediateType, unsigned int FractionBits, bool EnableRounding = true>
-class fixed
+struct fixed
 {
     static_assert(std::is_integral<BaseType>::value, "BaseType must be an integral type");
     static_assert(FractionBits > 0, "FractionBits must be greater than zero");
@@ -33,7 +33,13 @@ class fixed
     static_assert(sizeof(IntermediateType) > sizeof(BaseType), "IntermediateType must be larger than BaseType");
     static_assert(std::numeric_limits<IntermediateType>::is_signed == std::numeric_limits<BaseType>::is_signed, "IntermediateType must have same signedness as BaseType");
 
-public:
+    // For introspection using `decltype(fixed<...>)`
+    using base_type = BaseType;
+    using intermediate_type = IntermediateType;
+    static constexpr decltype(FractionBits) fraction_bits = FractionBits;
+    static constexpr decltype(FractionBits) integral_bits = (sizeof(BaseType) * 8) - FractionBits;
+    static constexpr decltype(EnableRounding) enable_rounding = EnableRounding;
+
     /// Although this value fits in the BaseType in terms of bits, if there's only one integral bit, this value
     /// is incorrect (flips from positive to negative), so we must extend the size to IntermediateType.
     static constexpr IntermediateType FRACTION_MULT = IntermediateType(1) << FractionBits;

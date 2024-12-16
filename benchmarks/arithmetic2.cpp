@@ -43,6 +43,11 @@ BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, sub, double, int, FUNC(double, int, -))
 BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, mul, double, int, FUNC(double, int, *));
 BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, div, double, int, FUNC(double, int, /));
 
+BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, add, fpm::fixed_24_8, int, FUNC(fpm::fixed_24_8, int, +));
+BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, sub, fpm::fixed_24_8, int, FUNC(fpm::fixed_24_8, int, -));
+BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, mul, fpm::fixed_24_8, int, FUNC(fpm::fixed_24_8, int, *));
+BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, div, fpm::fixed_24_8, int, FUNC(fpm::fixed_24_8, int, /));
+
 BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, add, fpm::fixed_16_16, int, FUNC(fpm::fixed_16_16, int, +));
 BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, sub, fpm::fixed_16_16, int, FUNC(fpm::fixed_16_16, int, -));
 BENCHMARK_TEMPLATE1_CAPTURE(arithmetic2, mul, fpm::fixed_16_16, int, FUNC(fpm::fixed_16_16, int, *));

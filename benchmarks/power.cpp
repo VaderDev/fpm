@@ -58,37 +58,45 @@ using CnlFixed16 = cnl::fixed_point<std::int32_t, -16>;
 
 BENCHMARK_TEMPLATE1_CAPTURE(power1, sqrt, float, &std::sqrt);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, sqrt, double, &std::sqrt);
+BENCHMARK_TEMPLATE1_CAPTURE(power1, sqrt, fpm::fixed_24_8, &fpm::sqrt);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, sqrt, fpm::fixed_16_16, &fpm::sqrt);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, sqrt, Fix16, fix16_func<&fix16_sqrt>);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, sqrt, CnlFixed16, &cnl::sqrt);
 
 BENCHMARK_TEMPLATE1_CAPTURE(power1, cbrt, float, &std::cbrt);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, cbrt, double, &std::cbrt);
+BENCHMARK_TEMPLATE1_CAPTURE(power1, cbrt, fpm::fixed_24_8, &fpm::cbrt);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, cbrt, fpm::fixed_16_16, &fpm::cbrt);
 
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log, float, &std::log);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log, double, &std::log);
+BENCHMARK_TEMPLATE1_CAPTURE(power1, log, fpm::fixed_24_8, &fpm::log);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log, fpm::fixed_16_16, &fpm::log);
 
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log2, float, &std::log2);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log2, double, &std::log2);
+BENCHMARK_TEMPLATE1_CAPTURE(power1, log2, fpm::fixed_24_8, &fpm::log2);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log2, fpm::fixed_16_16, &fpm::log2);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log2, Fix16, fix16_func<&fix16_log2>);
 
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log10, float, &std::log10);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log10, double, &std::log10);
+BENCHMARK_TEMPLATE1_CAPTURE(power1, log10, fpm::fixed_24_8, &fpm::log10);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, log10, fpm::fixed_16_16, &fpm::log10);
 
 BENCHMARK_TEMPLATE1_CAPTURE(power1, exp, float, &std::exp);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, exp, double, &std::exp);
+BENCHMARK_TEMPLATE1_CAPTURE(power1, exp, fpm::fixed_24_8, &fpm::exp);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, exp, fpm::fixed_16_16, &fpm::exp);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, exp, Fix16, fix16_func<&fix16_exp>);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, exp, CnlFixed16, &cnl::exp);
 
 BENCHMARK_TEMPLATE1_CAPTURE(power1, exp2, float, &std::exp2);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, exp2, double, &std::exp2);
+BENCHMARK_TEMPLATE1_CAPTURE(power1, exp2, fpm::fixed_24_8, &fpm::exp2);
 BENCHMARK_TEMPLATE1_CAPTURE(power1, exp2, fpm::fixed_16_16, &fpm::exp2);
 
 BENCHMARK_TEMPLATE1_CAPTURE(power2, pow, float, &std::pow);
 BENCHMARK_TEMPLATE1_CAPTURE(power2, pow, double, &std::pow);
+BENCHMARK_TEMPLATE1_CAPTURE(power2, pow, fpm::fixed_24_8, &fpm::pow);
 BENCHMARK_TEMPLATE1_CAPTURE(power2, pow, fpm::fixed_16_16, &fpm::pow);

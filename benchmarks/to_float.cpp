@@ -31,9 +31,14 @@ static void to_float(benchmark::State& state, TResult (*func)(TValue))
 
 using CnlFixed16 = cnl::fixed_point<std::int32_t, -16>;
 
+BENCHMARK_TEMPLATE1_CAPTURE(to_float, fpm::fixed_24_8, float, FUNC(fpm::fixed_24_8, float));
+BENCHMARK_TEMPLATE1_CAPTURE(to_float, fpm::fixed_24_8, double, FUNC(fpm::fixed_24_8, double));
+
 BENCHMARK_TEMPLATE1_CAPTURE(to_float, fpm::fixed_16_16, float, FUNC(fpm::fixed_16_16, float));
 BENCHMARK_TEMPLATE1_CAPTURE(to_float, fpm::fixed_16_16, double, FUNC(fpm::fixed_16_16, double));
+
 BENCHMARK_TEMPLATE1_CAPTURE(to_float, Fix16, float, FUNC(Fix16, float));
 BENCHMARK_TEMPLATE1_CAPTURE(to_float, Fix16, double, FUNC(Fix16, double));
+
 BENCHMARK_TEMPLATE1_CAPTURE(to_float, CnlFixed16, float, FUNC(CnlFixed16, float));
 BENCHMARK_TEMPLATE1_CAPTURE(to_float, CnlFixed16, double, FUNC(CnlFixed16, double));

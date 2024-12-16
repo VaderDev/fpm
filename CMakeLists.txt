@@ -172,6 +172,7 @@ if (BUILD_BENCHMARK)
 #
 add_executable(fpm-benchmark
 	benchmarks/arithmetic.cpp
+	benchmarks/arithmetic2.cpp
 	benchmarks/power.cpp
 	benchmarks/to_float.cpp
 	benchmarks/trigonometry.cpp

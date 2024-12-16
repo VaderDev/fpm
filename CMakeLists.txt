@@ -173,6 +173,7 @@ if (BUILD_BENCHMARK)
 add_executable(fpm-benchmark
 	benchmarks/arithmetic.cpp
 	benchmarks/power.cpp
+	benchmarks/to_float.cpp
 	benchmarks/trigonometry.cpp
 )
 target_link_libraries(fpm-benchmark PRIVATE fpm libfixmath libcnl benchmark benchmark_main)

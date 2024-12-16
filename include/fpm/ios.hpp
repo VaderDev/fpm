@@ -737,7 +737,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 
 }
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L /* C++20 */
 #   include <version>
 #   ifdef __cpp_lib_format
 #       include <format>

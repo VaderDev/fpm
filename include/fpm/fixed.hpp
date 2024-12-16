@@ -9,7 +9,7 @@
 #include <type_traits>
 
 #ifndef FPM_NODISCARD
-#   if __cplusplus >= 201703L
+#   if __cplusplus >= 201703L /* C++17 */
 #       define FPM_NODISCARD [[nodiscard]]
 #   else
 #       define FPM_NODISCARD
@@ -33,12 +33,14 @@ class fixed
     static_assert(sizeof(IntermediateType) > sizeof(BaseType), "IntermediateType must be larger than BaseType");
     static_assert(std::numeric_limits<IntermediateType>::is_signed == std::numeric_limits<BaseType>::is_signed, "IntermediateType must have same signedness as BaseType");
 
+public:
     /// Although this value fits in the BaseType in terms of bits, if there's only one integral bit, this value
     /// is incorrect (flips from positive to negative), so we must extend the size to IntermediateType.
     static constexpr IntermediateType FRACTION_MULT = IntermediateType(1) << FractionBits;
 
 #pragma region Constructors
 
+private:
     struct raw_construct_tag {};
     constexpr inline fixed(BaseType val, raw_construct_tag) noexcept : m_value(val) {}
 
@@ -154,6 +156,8 @@ public:
         return m_value != 0;
     }
 
+#pragma region Addition
+
     inline fixed& operator+=(const fixed& y) noexcept
     {
         m_value += y.m_value;
@@ -167,6 +171,10 @@ public:
         return *this;
     }
 
+#pragma endregion
+
+#pragma region Subtraction
+
     inline fixed& operator-=(const fixed& y) noexcept
     {
         m_value -= y.m_value;
@@ -179,6 +187,10 @@ public:
         m_value -= y * FRACTION_MULT;
         return *this;
     }
+
+#pragma endregion
+
+#pragma region Multiplication
 
     inline fixed& operator*=(const fixed& y) noexcept
     {
@@ -201,6 +213,10 @@ public:
         m_value *= y;
         return *this;
     }
+
+#pragma endregion
+
+#pragma region Division
 
     inline fixed& operator/=(const fixed& y) noexcept
     {
@@ -227,6 +243,8 @@ public:
 
 #pragma endregion
 
+#pragma endregion
+
 private:
     BaseType m_value;
 };
@@ -240,6 +258,8 @@ using fixed_24_8 = fixed<std::int32_t, std::int64_t, 8>;
 using fixed_8_24 = fixed<std::int32_t, std::int64_t, 24>;
 
 #pragma endregion
+
+#pragma region Arithmetic operators
 
 #pragma region Addition
 
@@ -290,19 +310,28 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator-(T x, const fixed<B, I
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
-    return fixed<B, I, F, R>(x) *= y;
+    if (R){
+        // Normal fixed-point multiplication is: x * y / 2**FractionBits.
+        // To correctly round the last bit in the result, we need one more bit of information.
+        // We do this by multiplying by two before dividing and adding the LSB to the real result.
+        const auto value = (static_cast<I>(x.raw_value()) * y.raw_value()) / (fixed<B, I, F, R>::FRACTION_MULT / 2);
+        return fixed<B, I, F, R>::from_raw_value(static_cast<B>((value / 2) + (value % 2)));
+    } else {
+        const auto value = (static_cast<I>(x.raw_value()) * y.raw_value()) / fixed<B, I, F, R>::FRACTION_MULT;
+        return fixed<B, I, F, R>::from_raw_value(static_cast<B>(value));
+    }
 }
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(const fixed<B, I, F, R>& x, T y) noexcept
 {
-    return fixed<B, I, F, R>(x) *= y;
+    return fixed<B, I, F, R>::from_raw_value(x.raw_value() * y);
 }
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(T x, const fixed<B, I, F, R>& y) noexcept
 {
-    return fixed<B, I, F, R>(y) *= x;
+    return fixed<B, I, F, R>::from_raw_value(x * y.raw_value());
 }
 #pragma endregion
 
@@ -311,20 +340,32 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(T x, const fixed<B, I
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
-    return fixed<B, I, F, R>(x) /= y;
+    assert(y.raw_value() != 0);
+    if (R){
+        // Normal fixed-point division is: x * 2**FractionBits / y.
+        // To correctly round the last bit in the result, we need one more bit of information.
+        // We do this by multiplying by two before dividing and adding the LSB to the real result.
+        const auto value = (static_cast<I>(x.raw_value()) * fixed<B, I, F, R>::FRACTION_MULT * 2) / y.raw_value();
+        return fixed<B, I, F, R>::from_raw_value(static_cast<B>((value / 2) + (value % 2)));
+    } else {
+        const auto value = (static_cast<I>(x.raw_value()) * fixed<B, I, F, R>::FRACTION_MULT) / y.raw_value();
+        return fixed<B, I, F, R>::from_raw_value(static_cast<B>(value));
+    }
 }
 
 template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(const fixed<B, I, F, R>& x, T y) noexcept
 {
-    return fixed<B, I, F, R>(x) /= y;
+    return fixed<B, I, F, R>::from_raw_value(x.raw_value() / y);
 }
 
 template <typename B, typename I, unsigned int F, typename T, bool R, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(T x, const fixed<B, I, F, R>& y) noexcept
 {
-    return fixed<B, I, F, R>(x) /= y;
+    return fixed<B, I, F, R>(x) / y;
 }
+
+#pragma endregion
 
 #pragma endregion
 
@@ -348,7 +389,7 @@ FPM_NODISCARD constexpr inline bool operator==(const T x, const fixed<B, I, F, R
     return fixed<B, I, F, R>{x} == y;
 }
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L /* C++20 */
 
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline auto operator<=>(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
@@ -550,7 +591,7 @@ struct is_fixed : std::false_type {};
 template<typename BaseType, typename IntermediateType, unsigned int FractionBits, bool EnableRounding>
 struct is_fixed<fixed<BaseType, IntermediateType, FractionBits, EnableRounding>> : std::true_type {};
 
-#if  __cplusplus >= 201703L
+#if  __cplusplus >= 201703L /* C++17 */
 template<typename T>
 inline constexpr bool is_fixed_v = is_fixed<T>::value;
 #endif

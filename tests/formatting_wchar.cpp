@@ -1,5 +1,3 @@
-#include <numbers>
-
 #include "common.hpp"
 #include <fpm/ios.hpp>
 
@@ -7,6 +5,7 @@
 #   include <version>
 #   ifdef __cpp_lib_format
 #       include <format>
+#       include <numbers>
 
 template <typename B, typename I, unsigned int F, bool R>
 inline void ExpectFormat(

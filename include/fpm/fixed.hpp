@@ -47,8 +47,8 @@ public:
     template <typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
     constexpr inline explicit fixed(T val) noexcept
         : m_value(static_cast<BaseType>((EnableRounding) ?
-		       (val >= 0.0) ? (val * FRACTION_MULT + T{0.5}) : (val * FRACTION_MULT - T{0.5})
-		      : (val * FRACTION_MULT)))
+                       (val >= 0.0) ? (val * FRACTION_MULT + T{0.5}) : (val * FRACTION_MULT - T{0.5})
+                      : (val * FRACTION_MULT)))
     {}
 
     // Constructs from another fixed-point type with possibly different underlying representation.
@@ -85,14 +85,14 @@ public:
     template <unsigned int NumFractionBits, typename T, typename std::enable_if<(NumFractionBits > FractionBits)>::type* = nullptr>
     static constexpr inline fixed from_fixed_point(T value) noexcept
     {
-	// To correctly round the last bit in the result, we need one more bit of information.
-	// We do this by multiplying by two before dividing and adding the LSB to the real result.
-	return (EnableRounding) ? fixed(static_cast<BaseType>(
+        // To correctly round the last bit in the result, we need one more bit of information.
+        // We do this by multiplying by two before dividing and adding the LSB to the real result.
+        return (EnableRounding) ? fixed(static_cast<BaseType>(
              value / (T(1) << (NumFractionBits - FractionBits)) +
             (value / (T(1) << (NumFractionBits - FractionBits - 1)) % 2)),
-	    raw_construct_tag{}) :
-	    fixed(static_cast<BaseType>(value / (T(1) << (NumFractionBits - FractionBits))),
-	     raw_construct_tag{});
+            raw_construct_tag{}) :
+            fixed(static_cast<BaseType>(value / (T(1) << (NumFractionBits - FractionBits))),
+             raw_construct_tag{});
     }
 
     template <unsigned int NumFractionBits, typename T, typename std::enable_if<(NumFractionBits <= FractionBits)>::type* = nullptr>
@@ -155,17 +155,17 @@ public:
 
     inline fixed& operator*=(const fixed& y) noexcept
     {
-	if (EnableRounding){
-	    // Normal fixed-point multiplication is: x * y / 2**FractionBits.
-	    // To correctly round the last bit in the result, we need one more bit of information.
-	    // We do this by multiplying by two before dividing and adding the LSB to the real result.
-	    auto value = (static_cast<IntermediateType>(m_value) * y.m_value) / (FRACTION_MULT / 2);
-	    m_value = static_cast<BaseType>((value / 2) + (value % 2));
-	} else {
-	    auto value = (static_cast<IntermediateType>(m_value) * y.m_value) / FRACTION_MULT;
-	    m_value = static_cast<BaseType>(value);
-	}
-	return *this;
+        if (EnableRounding){
+            // Normal fixed-point multiplication is: x * y / 2**FractionBits.
+            // To correctly round the last bit in the result, we need one more bit of information.
+            // We do this by multiplying by two before dividing and adding the LSB to the real result.
+            auto value = (static_cast<IntermediateType>(m_value) * y.m_value) / (FRACTION_MULT / 2);
+            m_value = static_cast<BaseType>((value / 2) + (value % 2));
+        } else {
+            auto value = (static_cast<IntermediateType>(m_value) * y.m_value) / FRACTION_MULT;
+            m_value = static_cast<BaseType>(value);
+        }
+        return *this;
     }
 
     template <typename I, typename std::enable_if<std::is_integral<I>::value>::type* = nullptr>
@@ -178,16 +178,16 @@ public:
     inline fixed& operator/=(const fixed& y) noexcept
     {
         assert(y.m_value != 0);
-	if (EnableRounding){
-	    // Normal fixed-point division is: x * 2**FractionBits / y.
-	    // To correctly round the last bit in the result, we need one more bit of information.
-	    // We do this by multiplying by two before dividing and adding the LSB to the real result.
-	    auto value = (static_cast<IntermediateType>(m_value) * FRACTION_MULT * 2) / y.m_value;
-	    m_value = static_cast<BaseType>((value / 2) + (value % 2));
-	} else {
-	    auto value = (static_cast<IntermediateType>(m_value) * FRACTION_MULT) / y.m_value;
-	    m_value = static_cast<BaseType>(value);
-	}
+        if (EnableRounding){
+            // Normal fixed-point division is: x * 2**FractionBits / y.
+            // To correctly round the last bit in the result, we need one more bit of information.
+            // We do this by multiplying by two before dividing and adding the LSB to the real result.
+            auto value = (static_cast<IntermediateType>(m_value) * FRACTION_MULT * 2) / y.m_value;
+            m_value = static_cast<BaseType>((value / 2) + (value % 2));
+        } else {
+            auto value = (static_cast<IntermediateType>(m_value) * FRACTION_MULT) / y.m_value;
+            m_value = static_cast<BaseType>(value);
+        }
         return *this;
     }
 

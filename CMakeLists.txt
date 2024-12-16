@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(fpm)
+project(fpm C CXX)
 
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_STANDARD 11)
-
 add_library(fpm INTERFACE)
+
+set_target_properties(fpm PROPERTIES
+  CXX_STANDARD 11
+  CXX_STANDARD_REQUIRED ON
+)
 
 target_include_directories(fpm INTERFACE include)
 
@@ -50,7 +53,10 @@ add_executable(fpm-test
   tests/power.cpp
   tests/trigonometry.cpp
 )
-set_target_properties(fpm-test PROPERTIES CXX_STANDARD 11)
+set_target_properties(fpm-test PROPERTIES
+  CXX_STANDARD 11
+  CXX_STANDARD_REQUIRED ON
+)
 target_link_libraries(fpm-test PRIVATE fpm gtest_main)
 gtest_add_tests(TARGET fpm-test)
 
@@ -69,10 +75,27 @@ add_executable(fpm-test20
   #tests/output.cpp
   #tests/power.cpp
   #tests/trigonometry.cpp
+  tests/arithmetic.cpp
+  tests/arithmetic_int.cpp
+  tests/basic_math.cpp
+  tests/constants.cpp
+  tests/conversion.cpp
+  tests/classification.cpp
+  tests/customizations.cpp
+  tests/detail.cpp
   tests/formatting.cpp
   tests/formatting_wchar.cpp
+  tests/input.cpp
+  tests/manip.cpp
+  tests/nearest.cpp
+  tests/output.cpp
+  tests/power.cpp
+  tests/trigonometry.cpp
 )
-set_target_properties(fpm-test20 PROPERTIES CXX_STANDARD 20)
+set_target_properties(fpm-test20 PROPERTIES
+  CXX_STANDARD 20
+  CXX_STANDARD_REQUIRED ON
+)
 target_link_libraries(fpm-test20 PRIVATE fpm gtest_main)
 gtest_add_tests(TARGET fpm-test20 TEST_SUFFIX .cpp20)
 

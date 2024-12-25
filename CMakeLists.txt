@@ -41,10 +41,11 @@ add_executable(fpm-test
   tests/arithmetic.cpp
   tests/arithmetic_int.cpp
   tests/basic_math.cpp
-  tests/constexpr.cpp
-  tests/constants.cpp
-  tests/conversion.cpp
+  tests/chars.cpp
   tests/classification.cpp
+  tests/constants.cpp
+  tests/constexpr.cpp
+  tests/conversion.cpp
   tests/customizations.cpp
   tests/detail.cpp
   tests/fraction_only.cpp
@@ -54,9 +55,9 @@ add_executable(fpm-test
   tests/nearest.cpp
   tests/output.cpp
   tests/power.cpp
+  tests/string_precision.cpp
   tests/trigonometry.cpp
   tests/type_conversion.cpp
-  tests/string_precision.cpp
 )
 set_target_properties(fpm-test PROPERTIES
   CXX_STANDARD 11
@@ -69,11 +70,11 @@ add_executable(fpm-test20
   tests/arithmetic.cpp
   tests/arithmetic_int.cpp
   tests/basic_math.cpp
-  tests/constexpr.cpp
-  tests/constants.cpp
-  tests/conversion.cpp
+  tests/chars.cpp
   tests/classification.cpp
-  tests/customizations.cpp
+  tests/constants.cpp
+  tests/constexpr.cpp
+  tests/conversion.cpp
   tests/detail.cpp
   tests/formatting.cpp
   tests/formatting_wchar.cpp
@@ -84,9 +85,9 @@ add_executable(fpm-test20
   tests/nearest.cpp
   tests/output.cpp
   tests/power.cpp
+  tests/string_precision.cpp
   tests/trigonometry.cpp
   tests/type_conversion.cpp
-  tests/string_precision.cpp
 )
 set_target_properties(fpm-test20 PROPERTIES
   CXX_STANDARD 20

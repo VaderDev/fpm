@@ -737,10 +737,9 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 
 }
 
-#if __cplusplus >= 202002L /* C++20 */
-#   include <version>
-#   ifdef __cpp_lib_to_chars
-#       include <charconv>
+#if __cplusplus >= 201703L /* C++17 */
+#   include <charconv>
+#   include <sstream>
 namespace std
 {
     template <typename B, typename I, unsigned int F, bool R>
@@ -751,40 +750,102 @@ namespace std
         std::chars_format fmt = std::chars_format::general
     )
     {
-        throw std::runtime_error("Not Implemented");//TODO
+        std::stringstream ss;
+        ss.write(first, last - first);
+
+        ss >> value;
+
+        const auto writtenChars = ss.tellp();
+        const auto readChars = ss.tellg();
+        if(readChars == 0)
+            return std::from_chars_result{
+                .ptr = first,
+                .ec = std::errc::invalid_argument
+            };
+        if(writtenChars == readChars)
+            return std::from_chars_result{
+                .ptr = last,
+                .ec = {}
+            };
+        return std::from_chars_result{
+            .ptr = first + readChars,
+            .ec = {}
+        };
     }
     template <typename B, typename I, unsigned int F, bool R>
-    std::to_chars_result to_chars(
+    inline std::to_chars_result to_chars(
         char* first,
         char* last,
-        fpm::fixed<B,I,F,R> value
+        fpm::fixed<B,I,F,R> value,
+        const std::chars_format fmt,
+        const int precision
     )
     {
-        throw std::runtime_error("Not Implemented");//TODO
+        std::stringstream ss;
+        ss << std::setprecision(precision);
+        switch(fmt)
+        {
+            case chars_format::scientific:
+                ss << std::scientific;
+                break;
+            case chars_format::fixed:
+                ss << std::fixed;
+                break;
+            case chars_format::hex:
+                ss << std::hexfloat;
+                break;
+            default:
+            case chars_format::general:
+                break;
+        }
+        try
+        {
+            ss << value;
+        }
+        catch(...)
+        {
+            return std::to_chars_result{
+                .ptr = last,
+                .ec = std::errc::io_error
+            };
+        }
+
+        const auto writtenChars = ss.tellp();
+        const auto readChars = ss.tellg();
+        if(writtenChars > last - first)
+            return std::to_chars_result{
+                .ptr = last,
+                .ec = std::errc::value_too_large
+            };
+
+        // Copy to output
+        ss.read(first, writtenChars);
+
+        return std::to_chars_result{
+            .ptr = first + writtenChars,
+            .ec = {}
+        };
     }
     template <typename B, typename I, unsigned int F, bool R>
-    std::to_chars_result to_chars(
+    inline std::to_chars_result to_chars(
         char* first,
         char* last,
-        fpm::fixed<B,I,F,R> value,
-        std::chars_format fmt
-        )
+        const fpm::fixed<B,I,F,R> value,
+        const std::chars_format fmt
+    )
     {
-        throw std::runtime_error("Not Implemented");//TODO
+        return to_chars(first, last, value, fmt, 6);
     }
     template <typename B, typename I, unsigned int F, bool R>
-    std::to_chars_result to_chars(
+    inline std::to_chars_result to_chars(
         char* first,
         char* last,
-        fpm::fixed<B,I,F,R> value,
-        std::chars_format fmt,
-        int precision
-        )
+        const fpm::fixed<B,I,F,R> value
+    )
     {
-        throw std::runtime_error("Not Implemented");//TODO
+        return to_chars(first, last, value, chars_format::general);
     }
 }
-#   endif
 #endif
 
 #if __cplusplus >= 202002L /* C++20 */

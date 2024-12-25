@@ -739,6 +739,56 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 
 #if __cplusplus >= 202002L /* C++20 */
 #   include <version>
+#   ifdef __cpp_lib_to_chars
+#       include <charconv>
+namespace std
+{
+    template <typename B, typename I, unsigned int F, bool R>
+    inline std::from_chars_result from_chars(
+        const char* first,
+        const char* last,
+        fpm::fixed<B,I,F,R>& value,
+        std::chars_format fmt = std::chars_format::general
+    )
+    {
+        throw std::runtime_error("Not Implemented");//TODO
+    }
+    template <typename B, typename I, unsigned int F, bool R>
+    std::to_chars_result to_chars(
+        char* first,
+        char* last,
+        fpm::fixed<B,I,F,R> value
+    )
+    {
+        throw std::runtime_error("Not Implemented");//TODO
+    }
+    template <typename B, typename I, unsigned int F, bool R>
+    std::to_chars_result to_chars(
+        char* first,
+        char* last,
+        fpm::fixed<B,I,F,R> value,
+        std::chars_format fmt
+        )
+    {
+        throw std::runtime_error("Not Implemented");//TODO
+    }
+    template <typename B, typename I, unsigned int F, bool R>
+    std::to_chars_result to_chars(
+        char* first,
+        char* last,
+        fpm::fixed<B,I,F,R> value,
+        std::chars_format fmt,
+        int precision
+        )
+    {
+        throw std::runtime_error("Not Implemented");//TODO
+    }
+}
+#   endif
+#endif
+
+#if __cplusplus >= 202002L /* C++20 */
+#   include <version>
 #   ifdef __cpp_lib_format
 #       include <format>
 #       include <sstream>
@@ -783,7 +833,7 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
 
     std::size_t width = 0;
     /// -1 means unchanged (this value cannot be set by the user as negative values are not possible)
-    std::size_t precision = -1;
+    std::size_t precision = static_cast<std::size_t>(-1);
 
     enum class FormatType : char
     {
@@ -953,7 +1003,7 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
     typename FormatContext::iterator format(const fpm::fixed<B, I, F, R>& value, FormatContext& ctx) const
     {
         std::basic_ostringstream<CharT> out;
-        if(signControl != SignControl::NegativeOnly && value >= decltype(value){0})
+        if(signControl != SignControl::NegativeOnly && value >= fpm::fixed<B, I, F, R>{0})
         {
             if(signControl == SignControl::PositiveSign)
                 out << '+';

@@ -56,6 +56,7 @@ add_executable(fpm-test
   tests/power.cpp
   tests/trigonometry.cpp
   tests/type_conversion.cpp
+  tests/string_precision.cpp
 )
 set_target_properties(fpm-test PROPERTIES
   CXX_STANDARD 11
@@ -85,6 +86,7 @@ add_executable(fpm-test20
   tests/power.cpp
   tests/trigonometry.cpp
   tests/type_conversion.cpp
+  tests/string_precision.cpp
 )
 set_target_properties(fpm-test20 PROPERTIES
   CXX_STANDARD 20

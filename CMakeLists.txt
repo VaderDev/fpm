@@ -55,6 +55,7 @@ add_executable(fpm-test
   tests/nearest.cpp
   tests/output.cpp
   tests/power.cpp
+  tests/stream.cpp
   tests/string_precision.cpp
   tests/trigonometry.cpp
   tests/type_conversion.cpp
@@ -85,6 +86,7 @@ add_executable(fpm-test20
   tests/nearest.cpp
   tests/output.cpp
   tests/power.cpp
+        tests/stream.cpp
   tests/string_precision.cpp
   tests/trigonometry.cpp
   tests/type_conversion.cpp

@@ -11,6 +11,7 @@
 #include <ios>
 #include <vector>
 
+#pragma region << and >>
 namespace fpm
 {
 
@@ -252,7 +253,7 @@ std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, fixed<B, I,
     }
 
     // Insert `ch` into the output at `position`, updating all references accordingly
-    const auto insert_character = [&](typename buffer_t::iterator position, CharT ch) {
+    const auto insert_character = [&](typename buffer_t::iterator position, const CharT ch) {
         assert(position >= buffer.begin() && position < end);
         std::move_backward(position, end, end + 1);
         if (point != buffer.end() && position < point) {
@@ -396,15 +397,15 @@ std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, fixed<B, I,
     }
 
     // Write character `ch` `count` times to the stream
-    const auto sputcn = [&](CharT ch, std::streamsize count){
+    const auto sputcn = [&](const CharT ch, const std::streamsize count){
         // Fill a buffer to output larger chunks
         constexpr std::streamsize chunk_size = 64;
-        std::array<CharT, chunk_size> fill_buffer;
-        std::fill_n(fill_buffer.begin(), std::min(count, chunk_size), ch);
+        std::array<CharT, chunk_size> fill_buffer{};
+        std::fill_n(fill_buffer.data(), std::min(count, chunk_size), ch);
 
         for (std::streamsize size, left = count; left > 0; left -= size) {
             size = std::min(chunk_size, left);
-            os.rdbuf()->sputn(&fill_buffer[0], size);
+            os.rdbuf()->sputn(fill_buffer.data(), size);
         }
     };
 
@@ -464,6 +465,9 @@ std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, fixed<B, I,
 }
 
 
+/// Infinity results in either maximum value, or minimum for negative infinity.
+///
+/// Extreme exponents result either in maximum value (extreme positive exponent) or zero (extreme negative exponent).
 template <typename CharT, class Traits, typename B, typename I, unsigned int F, bool R>
 std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>& is, fixed<B, I, F, R>& x)
 {
@@ -479,7 +483,8 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
     bool thousands_separator_allowed = false;
     const bool supports_thousands_separators = !numpunct.grouping().empty();
 
-    const auto& is_valid_character = [](char ch) {
+    /// Checks for all valid characters (base 16, infinity and signs)
+    const auto& is_valid_character = [](const CharT ch) {
         // Note: allowing ['p', 'i', 'n', 't', 'y'] is technically in violation of the spec (we are emulating std::num_get),
         // but otherwise we cannot parse hexfloats and "infinity". This is a known issue with the spec (LWG #2381).
         return std::isxdigit(ch) ||
@@ -489,7 +494,8 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
             ch == '-' || ch == '+';
     };
 
-    const auto& peek = [&]() {
+    /// Peek at next character without skipping over it.
+    const auto& peek = [&]() -> CharT {
         for(;;) {
             auto ch = is.rdbuf()->sgetc();
             if (ch == Traits::eof()) {
@@ -517,15 +523,18 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
         }
     };
 
-    const auto& bump = [&]() {
+    /// Skip 1 character.
+    const auto& bump = [&]() -> void {
         is.rdbuf()->sbumpc();
     };
 
-    const auto& next = [&]() {
+    /// Skip 1 character and peek at the next one.
+    const auto& next = [&]() -> CharT {
         bump();
         return peek();
     };
 
+#pragma region Signs
     bool negate = false;
     auto ch = peek();
     if (ch == '-') {
@@ -534,23 +543,29 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
     } else if (ch == '+') {
         ch = next();
     }
+#pragma endregion
 
-    const char infinity[] = "infinity";
-    // Must be "inf" or "infinity"
-    int i = 0;
-    while (i < 8 && ch == infinity[i]) {
-        ++i;
-        ch = next();
-    }
-
-    if (i > 0) {
-        if (i == 3 || i == 8) {
-            x = negate ? std::numeric_limits<fixed<B, I, F, R>>::min() : std::numeric_limits<fixed<B, I, F, R>>::max();
-        } else {
-            is.setstate(std::ios::failbit);
+#pragma region Infinity
+    {
+        const char infinity[] = "infinity";
+        // Must be "inf" or "infinity"
+        int infinityIndex = 0;
+        while (infinityIndex < 8 && ch == infinity[infinityIndex]) {
+            ++infinityIndex;
+            ch = next();
         }
-        return is;
+
+        // `infinityIndex` tells the matched length here
+        if (infinityIndex > 0) {
+            if (infinityIndex == 3 || infinityIndex == 8) {
+                x = negate ? std::numeric_limits<fixed<B, I, F, R>>::min() : std::numeric_limits<fixed<B, I, F, R>>::max();
+            } else {
+                is.setstate(std::ios::failbit);
+            }
+            return is;
+        }
     }
+#pragma endregion
 
     char exponent_char = 'e';
     int base = 10;
@@ -559,6 +574,8 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
     std::size_t fraction_start = NoFraction;
     std::vector<unsigned char> significand;
 
+#pragma region Digits (integral and fractional), HexFloat
+    // Detect hexfloats
     if (ch == '0') {
         ch = next();
         if (ch == 'x' || ch == 'X') {
@@ -567,6 +584,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
             base = 16;
             ch = next();
         } else {
+            // Not hexafloat, zero is start of the value
             significand.push_back(0);
         }
     }
@@ -591,11 +609,13 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
                 val = ch - 'A' + 10;
             }
             if (val < 0 || val >= base) {
-                break;
+                break; // Invalid value - out of range of valid characters for the base
             }
             significand.push_back(val);
+            //THINK limit number of digits so it makes sense?
         }
     }
+    // No digit means we don't have a valid number.
     if (significand.empty()) {
         // We need a significand
         is.setstate(std::ios::failbit);
@@ -607,13 +627,15 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
         // If we haven't seen a fraction yet, place it at the end of the significand
         fraction_start = significand.size();
     }
+#pragma endregion
 
-    // Parse the exponent
+#pragma region Parse the exponent
     bool exponent_overflow = false;
     std::size_t exponent = 0;
     bool exponent_negate = false;
     if (std::tolower(ch) == exponent_char)
     {
+        // Exponent sign
         ch = next();
         if (ch == '-') {
             exponent_negate = true;
@@ -622,6 +644,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
             ch = next();
         }
 
+        // Exponent numeric value
         bool parsed = false;
         while (std::isdigit(ch)) {
             if (exponent <= std::numeric_limits<int>::max() / 10) {
@@ -638,11 +661,12 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
             return is;
         }
     }
+#pragma endregion
 
     // We've parsed all we need. Construct the value.
     if (exponent_overflow) {
         // Absolute exponent is too large
-        if (std::all_of(significand.begin(), significand.end(), [](unsigned char x){ return x == 0; })) {
+        if (std::all_of(significand.begin(), significand.end(), [](const unsigned char v){ return v == 0; })) {
             // Significand is zero. Exponent doesn't matter.
             x = fixed<B, I, F, R>(0);
         } else if (exponent_negate) {
@@ -657,7 +681,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 
     // Shift the fraction offset according to exponent
     {
-        const auto exponent_mult = (base == 10) ? 1: 4;
+        const auto exponent_mult = (base == 10) ? 1 : 4;
         if (exponent_negate) {
             const auto adjust = std::min(exponent / exponent_mult, fraction_start);
             fraction_start -= adjust;
@@ -736,7 +760,9 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 }
 
 }
+#pragma endregion
 
+#pragma region to_chars / from_chars
 #if __cplusplus >= 201703L /* C++17 */
 #   include <charconv>
 #   include <sstream>
@@ -847,7 +873,9 @@ namespace std
     }
 }
 #endif
+#pragma endregion
 
+#pragma region std::formatter
 #if __cplusplus >= 202002L /* C++20 */
 #   include <version>
 #   ifdef __cpp_lib_format
@@ -1191,5 +1219,6 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
 };
 #   endif
 #endif
+#pragma endregion
 
 #endif

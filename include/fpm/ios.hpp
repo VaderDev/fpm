@@ -773,9 +773,36 @@ namespace std
         const char* first,
         const char* last,
         fpm::fixed<B,I,F,R>& value,
-        std::chars_format fmt = std::chars_format::general
+        std::chars_format fmt = std::chars_format::general //TODO Respect this value or at least validate the input
     )
     {
+        // This is just a hack to support hexfloat.
+        if(fmt == std::chars_format::hex)
+        {
+            std::vector<char> buffer{};
+            buffer.reserve(last - first + 2);
+
+            if(*first == '-')
+                buffer.emplace_back('-');
+            buffer.emplace_back('0');
+            buffer.emplace_back('x');
+            for(const char* it = first + (*first == '-' ? 1 : 0); it != last; ++it)
+                buffer.emplace_back(*it);
+
+            auto result = from_chars(buffer.data(), buffer.data() + buffer.size(), value, chars_format::general);
+
+            // Retarget `result` to `first`+`last`
+            if(result.ptr == buffer.data() + buffer.size())
+                result.ptr = last;
+            if(result.ptr == buffer.data())
+                result.ptr = first;
+            if(result.ptr == buffer.data() + 1) // Points to the 'x' char, this is just a hotfix to make it work
+                result.ptr = first;
+            result.ptr = first + (result.ptr - buffer.data() - 2);
+
+            return result;
+        }
+
         std::stringstream ss;
         ss.write(first, last - first);
 

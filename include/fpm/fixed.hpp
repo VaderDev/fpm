@@ -8,6 +8,9 @@
 #include <limits>
 #include <type_traits>
 
+#include "fwd.hpp"
+#include "int128.hpp"
+
 #ifndef FPM_NODISCARD
 #   if __cplusplus >= 201703L /* C++17 */
 #       define FPM_NODISCARD [[nodiscard]]
@@ -15,25 +18,6 @@
 #       define FPM_NODISCARD
 #   endif
 #endif
-
-#if defined(FPM_INT128)
-// Already defined
-#elif defined(__SIZEOF_INT128__)
-namespace fpm {
-using int128_t = __int128_t;
-} // namespace fpm
-#   define FPM_INT128 ::fpm::int128_t
-#elif defined(_MSC_VER)
-#include "__msvc_int128.hpp"
-namespace fpm {
-using int128_t = std::_Signed128;
-} // namespace fpm
-#   define FPM_INT128 ::fpm::int128_t
-#else
-#warning 128-bit numbers not supported.
-#endif
-static_assert(sizeof(FPM_INT128) > sizeof(std::int64_t));
-static_assert(std::numeric_limits<FPM_INT128>::is_signed);
 
 namespace fpm
 {
@@ -43,7 +27,7 @@ namespace fpm
 //! \tparam IntermediateType the integer type used to store intermediate results during calculations.
 //! \tparam FractionBits     the number of bits of the BaseType used to store the fraction
 //! \tparam EnableRounding   enable rounding of LSB for multiplication, division, and type conversion
-template <typename BaseType, typename IntermediateType, unsigned int FractionBits, bool EnableRounding = true>
+template <typename BaseType, typename IntermediateType, unsigned int FractionBits, bool EnableRounding>
 struct fixed
 {
     static_assert(std::is_integral<BaseType>::value, "BaseType must be an integral type");
@@ -324,11 +308,11 @@ using fixed_24_8 = fixed<std::int32_t, std::int64_t, 8>;
 using fixed_8_24 = fixed<std::int32_t, std::int64_t, 24>;
 
 #ifdef FPM_INT128
-using fixed_56_8  = fixed<std::int64_t, FPM_INT128, 8>;
-using fixed_48_16 = fixed<std::int64_t, FPM_INT128, 16>;
-using fixed_32_32 = fixed<std::int64_t, FPM_INT128, 32>;
-using fixed_16_48 = fixed<std::int64_t, FPM_INT128, 48>;
-using fixed_8_56  = fixed<std::int64_t, FPM_INT128, 56>;
+using fixed_56_8  = fixed<std::int64_t, ::fpm::int128_t, 8>;
+using fixed_48_16 = fixed<std::int64_t, ::fpm::int128_t, 16>;
+using fixed_32_32 = fixed<std::int64_t, ::fpm::int128_t, 32>;
+using fixed_16_48 = fixed<std::int64_t, ::fpm::int128_t, 48>;
+using fixed_8_56  = fixed<std::int64_t, ::fpm::int128_t, 56>;
 #endif
 
 // =================================================================================================

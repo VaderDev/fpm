@@ -7,7 +7,7 @@ include(GNUInstallDirs)
 add_library(fpm INTERFACE)
 
 set_target_properties(fpm PROPERTIES
-  CXX_STANDARD 11
+  CXX_STANDARD 23
   CXX_STANDARD_REQUIRED ON
 )
 
@@ -61,7 +61,7 @@ add_executable(fpm-test
   tests/type_conversion.cpp
 )
 set_target_properties(fpm-test PROPERTIES
-  CXX_STANDARD 11
+  CXX_STANDARD 23
   CXX_STANDARD_REQUIRED ON
 )
 target_link_libraries(fpm-test PRIVATE fpm gtest_main)
@@ -92,7 +92,7 @@ add_executable(fpm-test20
   tests/type_conversion.cpp
 )
 set_target_properties(fpm-test20 PROPERTIES
-  CXX_STANDARD 20
+  CXX_STANDARD 23
   CXX_STANDARD_REQUIRED ON
 )
 target_link_libraries(fpm-test20 PRIVATE fpm gtest_main)
@@ -193,7 +193,7 @@ if (BUILD_ACCURACY)
 add_executable(fpm-accuracy
 	accuracy/accuracy.cpp
 )
-set_target_properties(fpm-accuracy PROPERTIES CXX_STANDARD 14)
+set_target_properties(fpm-accuracy PROPERTIES CXX_STANDARD 23)
 target_link_libraries(fpm-accuracy PRIVATE fpm libfixmath)
 endif()
 

@@ -531,7 +531,7 @@ struct numeric_limits<fpm::fixed<B,I,F,R>>
     static constexpr bool has_infinity = false;
     static constexpr bool has_quiet_NaN = false;
     static constexpr bool has_signaling_NaN = false;
-    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    // static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
     static constexpr bool has_denorm_loss = false;
     static constexpr std::float_round_style round_style = std::round_to_nearest;
     static constexpr bool is_iec559 = false;
@@ -581,53 +581,6 @@ struct numeric_limits<fpm::fixed<B,I,F,R>>
         return min();
     }
 };
-
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_specialized;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_signed;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_integer;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_exact;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::has_infinity;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::has_quiet_NaN;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::has_signaling_NaN;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr std::float_denorm_style numeric_limits<fpm::fixed<B,I,F,R>>::has_denorm;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::has_denorm_loss;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr std::float_round_style numeric_limits<fpm::fixed<B,I,F,R>>::round_style;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_iec559;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_bounded;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_modulo;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::digits;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::digits10;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::max_digits10;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::radix;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::min_exponent;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::min_exponent10;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::max_exponent;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::max_exponent10;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::traps;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::tinyness_before;
 
 #pragma endregion
 

@@ -95,7 +95,7 @@ TYPED_TEST(customizations, numeric_limits)
     EXPECT_EQ(L::has_infinity, false);
     EXPECT_EQ(L::has_quiet_NaN, false);
     EXPECT_EQ(L::has_signaling_NaN, false);
-    EXPECT_EQ(L::has_denorm, std::denorm_absent);
+    // EXPECT_EQ(L::has_denorm, std::denorm_absent);
     EXPECT_EQ(L::has_denorm_loss, false);
     EXPECT_EQ(L::round_style, std::round_to_nearest);
     EXPECT_EQ(L::is_iec559, false);

@@ -2,11 +2,11 @@
 #define FPM_MATH_HPP
 
 #include "fixed.hpp"
+
+#include <bit>
+#include <cassert>
 #include <cmath>
 
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
 
 namespace fpm
 {
@@ -15,27 +15,11 @@ namespace fpm
 namespace detail
 {
 
-/// Returns the index of the most-signifcant set bit
+/// Returns the index of the most-significant set bit
 FPM_NODISCARD inline long find_highest_bit(unsigned long long value) noexcept
 {
     assert(value != 0);
-#if defined(_MSC_VER)
-    unsigned long index;
-#if defined(_WIN64)
-    _BitScanReverse64(&index, value);
-#else
-    if (_BitScanReverse(&index, static_cast<unsigned long>(value >> 32)) != 0) {
-        index += 32;
-    } else {
-        _BitScanReverse(&index, static_cast<unsigned long>(value & 0xfffffffflu));
-    }
-#endif
-    return index;
-#elif defined(__GNUC__) || defined(__clang__)
-    return sizeof(value) * 8 - 1 - __builtin_clzll(value);
-#else
-#   error "your platform does not support find_highest_bit()"
-#endif
+	return std::bit_width(value) - 1;
 }
 
 }

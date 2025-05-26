@@ -15,6 +15,8 @@ target_include_directories(fpm INTERFACE include)
 
 install(FILES
   include/fpm/fixed.hpp
+  include/fpm/fwd.hpp
+  include/fpm/int128.hpp
   include/fpm/ios.hpp
   include/fpm/math.hpp
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fpm)

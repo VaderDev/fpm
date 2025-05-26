@@ -11,7 +11,6 @@
 #include <ios>
 #include <vector>
 
-#pragma region << and >>
 namespace fpm
 {
 
@@ -534,7 +533,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
         return peek();
     };
 
-#pragma region Signs
+	// Signs
     bool negate = false;
     auto ch = peek();
     if (ch == '-') {
@@ -543,9 +542,8 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
     } else if (ch == '+') {
         ch = next();
     }
-#pragma endregion
 
-#pragma region Infinity
+	// Infinity
     {
         const char infinity[] = "infinity";
         // Must be "inf" or "infinity"
@@ -565,7 +563,6 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
             return is;
         }
     }
-#pragma endregion
 
     char exponent_char = 'e';
     int base = 10;
@@ -574,7 +571,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
     std::size_t fraction_start = NoFraction;
     std::vector<unsigned char> significand;
 
-#pragma region Digits (integral and fractional), HexFloat
+	// Digits (integral and fractional), HexFloat
     // Detect hexfloats
     if (ch == '0') {
         ch = next();
@@ -627,9 +624,8 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
         // If we haven't seen a fraction yet, place it at the end of the significand
         fraction_start = significand.size();
     }
-#pragma endregion
 
-#pragma region Parse the exponent
+	// Parse the exponent
     bool exponent_overflow = false;
     std::size_t exponent = 0;
     bool exponent_negate = false;
@@ -661,7 +657,6 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
             return is;
         }
     }
-#pragma endregion
 
     // We've parsed all we need. Construct the value.
     if (exponent_overflow) {
@@ -760,9 +755,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 }
 
 }
-#pragma endregion
 
-#pragma region to_chars / from_chars
 #if __cplusplus >= 201703L /* C++17 */
 #   include <charconv>
 #   include <sstream>
@@ -900,9 +893,9 @@ namespace std
     }
 }
 #endif
-#pragma endregion
 
-#pragma region std::formatter
+// =================================================================================================
+
 #if __cplusplus >= 202002L /* C++20 */
 #   include <version>
 #   ifdef __cpp_lib_format
@@ -1246,6 +1239,5 @@ struct std::formatter<fpm::fixed<B, I, F, R>, CharT>
 };
 #   endif
 #endif
-#pragma endregion
 
 #endif

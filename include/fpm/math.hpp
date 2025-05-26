@@ -11,7 +11,6 @@
 namespace fpm
 {
 
-#pragma region Helper functions
 namespace detail
 {
 
@@ -23,9 +22,6 @@ FPM_NODISCARD inline long find_highest_bit(unsigned long long value) noexcept
 }
 
 }
-#pragma endregion
-
-#pragma region Classification methods
 
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline int fpclassify(fixed<B, I, F, R> x) noexcept
@@ -99,10 +95,6 @@ FPM_NODISCARD constexpr inline bool isunordered(fixed<B, I, F, R> x, fixed<B, I,
     return false;
 }
 
-#pragma endregion
-
-#pragma region Nearest integer operations
-
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> ceil(fixed<B, I, F, R> x) noexcept
 {
@@ -158,10 +150,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> rint(fixed<B, I, F, R> x) noexc
     return nearbyint(x);
 }
 
-#pragma endregion
-
-#pragma region Mathematical functions
-
 template <typename B, typename I, unsigned int F, bool R, typename std::enable_if<std::is_signed<B>::value>::type* = nullptr>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> abs(fixed<B, I, F, R> x) noexcept
 {
@@ -204,10 +192,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> remquo(fixed<B, I, F, R> x, fix
     return fixed<B, I, F, R>::from_raw_value(x.raw_value() % y.raw_value());
 }
 
-#pragma endregion
-
-#pragma region Manipulation functions
-
 template <typename B, typename I, unsigned int F, bool R, typename C, typename J, unsigned int G, bool S>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> copysign(fixed<B, I, F, R> x, fixed<C, J, G, S> y) noexcept
 {
@@ -238,10 +222,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> modf(fixed<B, I, F, R> x, fixed
     *iptr = fixed<B, I, F, R>::from_raw_value(raw / FRAC * FRAC);
     return fixed<B, I, F, R>::from_raw_value(raw % FRAC);
 }
-
-#pragma endregion
-
-#pragma region Power functions
 
 template <typename B, typename I, unsigned int F, bool R, typename T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
 FPM_NODISCARD constexpr fixed<B, I, F, R> pow(fixed<B, I, F, R> base, T exp) noexcept
@@ -487,10 +467,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> hypot(fixed<B, I, F, R> x, fixe
     return sqrt(x*x + y*y);
 }
 
-#pragma endregion
-
-#pragma region Trigonometry functions
-
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr fixed<B, I, F, R> sin(fixed<B, I, F, R> x) noexcept
 {
@@ -662,8 +638,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> atan2(fixed<B, I, F, R> y, fixe
     }
     return ret;
 }
-
-#pragma endregion
 
 }
 

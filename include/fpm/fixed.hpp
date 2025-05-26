@@ -47,8 +47,6 @@ struct fixed
     /// is incorrect (flips from positive to negative), so we must extend the size to IntermediateType.
     static constexpr IntermediateType FRACTION_MULT = IntermediateType(1) << FractionBits;
 
-#pragma region Constructors
-
 private:
     struct raw_construct_tag {};
     constexpr inline fixed(BaseType val, raw_construct_tag) noexcept : m_value(val) {}
@@ -81,10 +79,6 @@ public:
         : m_value(from_fixed_point<F>(val.raw_value()).raw_value())
     {}
 
-#pragma endregion
-
-#pragma region Conversion Operators
-
     /// Explicit conversion to a floating-point type
     template <typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
     FPM_NODISCARD constexpr inline explicit operator T() const noexcept
@@ -98,8 +92,6 @@ public:
     {
         return static_cast<T>(m_value / FRACTION_MULT);
     }
-
-#pragma region fpm::fixed conversion
 
     /// Change number of Fraction Bits.
     template <typename I, unsigned int F, bool R>
@@ -142,12 +134,6 @@ public:
         }
     }
 
-#pragma endregion
-
-#pragma endregion
-
-#pragma region Raw Values
-
     /// Returns the raw underlying value of this type.
     /// Do not use this unless you know what you're doing.
     FPM_NODISCARD constexpr inline BaseType raw_value() const noexcept
@@ -186,25 +172,15 @@ public:
         return fixed(value, raw_construct_tag{});
     }
 
-#pragma endregion
-
-#pragma region Constants
-
     FPM_NODISCARD static constexpr fixed e() { return from_fixed_point<61>(6267931151224907085ll); }
     FPM_NODISCARD static constexpr fixed pi() { return from_fixed_point<61>(7244019458077122842ll); }
     FPM_NODISCARD static constexpr fixed half_pi() { return from_fixed_point<62>(7244019458077122842ll); }
     FPM_NODISCARD static constexpr fixed two_pi() { return from_fixed_point<60>(7244019458077122842ll); }
 
-#pragma endregion
-
     FPM_NODISCARD constexpr inline explicit operator bool() const noexcept
     {
         return m_value != 0;
     }
-
-#pragma region Arithmetic member operators
-
-#pragma region Addition
 
     constexpr inline fixed& operator+=(const fixed& y) noexcept
     {
@@ -219,10 +195,6 @@ public:
         return *this;
     }
 
-#pragma endregion
-
-#pragma region Subtraction
-
     constexpr inline fixed& operator-=(const fixed& y) noexcept
     {
         m_value -= y.m_value;
@@ -235,10 +207,6 @@ public:
         m_value -= y * FRACTION_MULT;
         return *this;
     }
-
-#pragma endregion
-
-#pragma region Multiplication
 
     constexpr inline fixed& operator*=(const fixed& y) noexcept
     {
@@ -261,10 +229,6 @@ public:
         m_value *= y;
         return *this;
     }
-
-#pragma endregion
-
-#pragma region Division
 
     constexpr inline fixed& operator/=(const fixed& y) noexcept
     {
@@ -289,15 +253,9 @@ public:
         return *this;
     }
 
-#pragma endregion
-
-#pragma endregion
-
 private:
     BaseType m_value;
 };
-
-#pragma region Convenience typedefs
 
 // =================================================================================================
 
@@ -317,17 +275,11 @@ using fixed_8_56  = fixed<std::int64_t, ::fpm::int128_t, 56>;
 
 // =================================================================================================
 
-#pragma endregion
-
 template<typename B, typename I, unsigned int F, bool R, typename std::enable_if <std::is_signed<B>::value>::type* = nullptr>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator-(const fixed<B, I, F, R>& x) noexcept
 {
     return fixed<B, I, F, R>::from_raw_value(-x.raw_value());
 }
-
-#pragma region Arithmetic operators
-
-#pragma region Addition
 
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator+(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
@@ -347,10 +299,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator+(T x, const fixed<B, I
     return fixed<B, I, F, R>(x) + y;
 }
 
-#pragma endregion
-
-#pragma region Subtraction
-
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator-(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
 {
@@ -368,10 +316,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator-(T x, const fixed<B, I
 {
     return fixed<B, I, F, R>(x) - y;
 }
-
-#pragma endregion
-
-#pragma region Multiplication
 
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
@@ -399,9 +343,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator*(T x, const fixed<B, I
 {
     return fixed<B, I, F, R>::from_raw_value(x * y.raw_value());
 }
-#pragma endregion
-
-#pragma region Division
 
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
@@ -430,12 +371,6 @@ FPM_NODISCARD constexpr inline fixed<B, I, F, R> operator/(T x, const fixed<B, I
 {
     return fixed<B, I, F, R>(x) / y;
 }
-
-#pragma endregion
-
-#pragma endregion
-
-#pragma region Comparison operators
 
 template <typename B, typename I, unsigned int F, bool R>
 FPM_NODISCARD constexpr inline bool operator==(const fixed<B, I, F, R>& x, const fixed<B, I, F, R>& y) noexcept
@@ -496,7 +431,6 @@ FPM_NODISCARD constexpr inline bool operator>=(const fixed<B, I, F, R>& x, const
 }
 
 #endif
-#pragma endregion
 
 namespace detail
 {
@@ -533,8 +467,6 @@ struct hash<fpm::fixed<B,I,F,R>>
         return std::hash<B>{}(arg.raw_value());
     }
 };
-
-#pragma region numeric_limits
 
 template <typename B, typename I, unsigned int F, bool R>
 struct numeric_limits<fpm::fixed<B,I,F,R>>
@@ -596,8 +528,6 @@ struct numeric_limits<fpm::fixed<B,I,F,R>>
         return min();
     }
 };
-
-#pragma endregion
 
 }
 

@@ -769,7 +769,7 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 namespace std
 {
     template <typename B, typename I, unsigned int F, bool R>
-    inline std::from_chars_result from_chars(
+    constexpr std::from_chars_result from_chars(
         const char* first,
         const char* last,
         fpm::fixed<B,I,F,R>& value,
@@ -826,7 +826,7 @@ namespace std
         };
     }
     template <typename B, typename I, unsigned int F, bool R>
-    inline std::to_chars_result to_chars(
+    constexpr std::to_chars_result to_chars(
         char* first,
         char* last,
         fpm::fixed<B,I,F,R> value,
@@ -880,7 +880,7 @@ namespace std
         };
     }
     template <typename B, typename I, unsigned int F, bool R>
-    inline std::to_chars_result to_chars(
+    constexpr inline std::to_chars_result to_chars(
         char* first,
         char* last,
         const fpm::fixed<B,I,F,R> value,
@@ -890,7 +890,7 @@ namespace std
         return to_chars(first, last, value, fmt, 6);
     }
     template <typename B, typename I, unsigned int F, bool R>
-    inline std::to_chars_result to_chars(
+    constexpr inline std::to_chars_result to_chars(
         char* first,
         char* last,
         const fpm::fixed<B,I,F,R> value

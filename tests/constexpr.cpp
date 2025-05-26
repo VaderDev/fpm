@@ -1,6 +1,5 @@
 #include "common.hpp"
 
-#if __cplusplus >= 201402L /* C++14 */
 using P = fpm::fixed_16_16;
 
 TEST(constexpr, addition)
@@ -68,4 +67,3 @@ TEST(constexpr, division)
 	static_assert(1 / P{1} == P{1  }, "Arithmetics failed");
 	static_assert(1 / P{2} == P{0.5}, "Arithmetics failed");
 }
-#endif

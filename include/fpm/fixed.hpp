@@ -203,14 +203,14 @@ public:
 
 #pragma region Addition
 
-    inline fixed& operator+=(const fixed& y) noexcept
+    constexpr inline fixed& operator+=(const fixed& y) noexcept
     {
         m_value += y.m_value;
         return *this;
     }
 
     template <typename I, typename std::enable_if<std::is_integral<I>::value>::type* = nullptr>
-    inline fixed& operator+=(I y) noexcept
+    constexpr inline fixed& operator+=(I y) noexcept
     {
         m_value += y * FRACTION_MULT;
         return *this;
@@ -220,14 +220,14 @@ public:
 
 #pragma region Subtraction
 
-    inline fixed& operator-=(const fixed& y) noexcept
+    constexpr inline fixed& operator-=(const fixed& y) noexcept
     {
         m_value -= y.m_value;
         return *this;
     }
 
     template <typename I, typename std::enable_if<std::is_integral<I>::value>::type* = nullptr>
-    inline fixed& operator-=(I y) noexcept
+    constexpr inline fixed& operator-=(I y) noexcept
     {
         m_value -= y * FRACTION_MULT;
         return *this;
@@ -237,7 +237,7 @@ public:
 
 #pragma region Multiplication
 
-    inline fixed& operator*=(const fixed& y) noexcept
+    constexpr inline fixed& operator*=(const fixed& y) noexcept
     {
         if (EnableRounding){
             // Normal fixed-point multiplication is: x * y / 2**FractionBits.
@@ -253,7 +253,7 @@ public:
     }
 
     template <typename I, typename std::enable_if<std::is_integral<I>::value>::type* = nullptr>
-    inline fixed& operator*=(I y) noexcept
+    constexpr inline fixed& operator*=(I y) noexcept
     {
         m_value *= y;
         return *this;
@@ -263,7 +263,7 @@ public:
 
 #pragma region Division
 
-    inline fixed& operator/=(const fixed& y) noexcept
+    constexpr inline fixed& operator/=(const fixed& y) noexcept
     {
         assert(y.m_value != 0);
         if (EnableRounding){
@@ -280,7 +280,7 @@ public:
     }
 
     template <typename I, typename std::enable_if<std::is_integral<I>::value>::type* = nullptr>
-    inline fixed& operator/=(I y) noexcept
+    constexpr inline fixed& operator/=(I y) noexcept
     {
         m_value /= y;
         return *this;
@@ -559,7 +559,7 @@ struct numeric_limits<fpm::fixed<B,I,F,R>>
 
     static constexpr fpm::fixed<B,I,F,R> lowest() noexcept {
         return fpm::fixed<B,I,F,R>::from_raw_value(std::numeric_limits<B>::lowest());
-    };
+    }
 
     static constexpr fpm::fixed<B,I,F,R> min() noexcept {
         return lowest();
@@ -567,15 +567,15 @@ struct numeric_limits<fpm::fixed<B,I,F,R>>
 
     static constexpr fpm::fixed<B,I,F,R> max() noexcept {
         return fpm::fixed<B,I,F,R>::from_raw_value(std::numeric_limits<B>::max());
-    };
+    }
 
     static constexpr fpm::fixed<B,I,F,R> epsilon() noexcept {
         return fpm::fixed<B,I,F,R>::from_raw_value(1);
-    };
+    }
 
     static constexpr fpm::fixed<B,I,F,R> round_error() noexcept {
         return fpm::fixed<B,I,F,R>(1) / 2;
-    };
+    }
 
     static constexpr fpm::fixed<B,I,F,R> denorm_min() noexcept {
         return min();
@@ -597,7 +597,7 @@ struct is_fixed<fixed<BaseType, IntermediateType, FractionBits, EnableRounding>>
 
 #if  __cplusplus >= 201703L /* C++17 */
 template<typename T>
-inline constexpr bool is_fixed_v = is_fixed<T>::value;
+constexpr inline bool is_fixed_v = is_fixed<T>::value;
 #endif
 }
 #endif

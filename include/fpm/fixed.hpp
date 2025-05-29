@@ -86,6 +86,12 @@ public:
         return static_cast<T>(m_value / FRACTION_MULT);
     }
 
+    /// Explicit conversion to the base integer type with truncate
+    [[nodiscard]] constexpr inline BaseType integer() const noexcept
+    {
+        return static_cast<BaseType>(m_value / FRACTION_MULT);
+    }
+
     /// Change number of Fraction Bits.
     template <typename I, unsigned int F, bool R>
     [[nodiscard]] constexpr inline explicit operator fixed<BaseType, I, F, R>() const noexcept
